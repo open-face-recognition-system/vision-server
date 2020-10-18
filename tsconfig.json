@@ -7,7 +7,6 @@
     "rootDir": "./src",
     "strict": true,
     "strictPropertyInitialization": false,
-    "moduleResolution": "node",
     "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -16,10 +15,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "typeRoots": [
-      "../../node_modules/@types",
-      "src/@types"
-    ],
     "paths": {
       "@config/*": [
         "config/*"
@@ -32,8 +27,10 @@
       ]
     }
   },
-  "include": [
-    "src",
-    "__tests__"
+  "exclude": [
+    "commitlint.config.js",
+    "coverage",
+    "jest.config.js",
+    "prettier.config.js"
   ]
 }
