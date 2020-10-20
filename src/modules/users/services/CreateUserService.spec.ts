@@ -7,7 +7,7 @@ let fakeUsersRepository: FakeUsersRepository;
 let fakeHashProvider: FakeHashProvider;
 let createUser: CreateUserService;
 
-describe('CreateUser', () => {
+describe('Create User', () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
     fakeHashProvider = new FakeHashProvider();
@@ -22,6 +22,7 @@ describe('CreateUser', () => {
     });
 
     expect(user).toHaveProperty('id');
+    expect(user.role).toBe('admin');
   });
 
   it('should not be able to create a new user with same email from another', async () => {

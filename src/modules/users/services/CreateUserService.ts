@@ -1,10 +1,12 @@
 import { injectable, inject } from 'tsyringe';
 
 import AppError from '@shared/errors/AppError';
+import Service from '@shared/core/Service';
 import IUsersRepository from '../repositories/IUsersRepository';
 import IHashProvider from '../providers/HashProvider/models/IHashProvider';
 
 import User from '../infra/typeorm/entities/User';
+import Role from '../infra/typeorm/entities/Role';
 
 interface IRequest {
   name: string;
@@ -13,7 +15,7 @@ interface IRequest {
 }
 
 @injectable()
-class CreateUserService {
+class CreateUserService implements Service<IRequest, User> {
   private usersRepository: IUsersRepository;
 
   private hashProvider: IHashProvider;
@@ -41,6 +43,7 @@ class CreateUserService {
       name,
       email,
       password: hashedPassword,
+      role: Role.ADMIN,
     });
 
     return user;

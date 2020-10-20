@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 
 import { Exclude } from 'class-transformer';
+import Role from './Role';
 
 @Entity('users')
 class User {
@@ -22,6 +23,12 @@ class User {
   @Column()
   @Exclude()
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: Role,
+  })
+  role: Role;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

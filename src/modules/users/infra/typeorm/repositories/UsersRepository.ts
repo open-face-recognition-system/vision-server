@@ -11,7 +11,7 @@ class UsersRepository implements IUsersRepository {
     this.ormRepository = getRepository(User);
   }
 
-  public async findById(id: string): Promise<User | undefined> {
+  public async findById(id: number): Promise<User | undefined> {
     const user = await this.ormRepository.findOne(id);
     return user;
   }
@@ -25,8 +25,9 @@ class UsersRepository implements IUsersRepository {
     name,
     email,
     password,
+    role,
   }: ICreateUserDTO): Promise<User> {
-    const user = this.ormRepository.create({ name, email, password });
+    const user = this.ormRepository.create({ name, email, password, role });
     await this.ormRepository.save(user);
     return user;
   }
