@@ -10,7 +10,6 @@ export default class ProfileController {
     const userId = request.user.id;
 
     const showProfile = container.resolve(ShowProfileService);
-
     const user = await showProfile.execute({ userId });
 
     return response.json(classToClass(user));
@@ -21,7 +20,6 @@ export default class ProfileController {
     const { name, email, oldPassword, password } = request.body;
 
     const updateProfile = container.resolve(UpdateProfileService);
-
     const user = await updateProfile.execute({
       userId,
       name,
