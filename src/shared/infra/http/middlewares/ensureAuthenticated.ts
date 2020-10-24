@@ -8,10 +8,12 @@ import AppError from '@shared/errors/AppError';
 interface ITokenPayload {
   iat: number;
   exp: number;
-  sub: number;
+  id: number;
+  role: string;
 }
 
 export default function ensureAuthenticated(
+  requiredRoles: string[],
   request: Request,
   response: Response,
   next: NextFunction,
@@ -19,24 +21,26 @@ export default function ensureAuthenticated(
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
-    throw new Error('JWT token is missing.');
+    throw new AppError('JWT token is missing', 401);
   }
 
   const [, token] = authHeader.split(' ');
-
+  let decoded;
   try {
-    const decoded = jwt.verify(token, authConfig.jwt.secret);
-
-    const { sub } = decoded as ITokenPayload;
-
-    console.log(sub);
-
-    request.user = {
-      id: sub,
-    };
-
-    return next();
+    decoded = jwt.verify(token, authConfig.jwt.secret);
   } catch {
-    throw new AppError('Invalid JWT token');
+    throw new AppError('Invalid JWT token', 401);
   }
+
+  const { id, role } = decoded as ITokenPayload;
+
+  if (!requiredRoles.includes(role)) {
+    throw new AppError(`The role ${role} cannot access this resource`, 403);
+  }
+
+  request.user = {
+    id,
+    role,
+  };
+  return next();
 }
