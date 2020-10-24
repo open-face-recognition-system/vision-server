@@ -5,12 +5,18 @@ import jwt from 'jsonwebtoken';
 import authConfig from '@config/auth';
 import AppError from '@shared/errors/AppError';
 
+interface ITokenPayload {
+  iat: number;
+  exp: number;
+  sub: number;
+}
+
 export default function ensureAuthenticated(
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction,
 ): void | Error {
-  const authHeader = req.headers.authorization;
+  const authHeader = request.headers.authorization;
 
   if (!authHeader) {
     throw new Error('JWT token is missing.');
@@ -19,7 +25,15 @@ export default function ensureAuthenticated(
   const [, token] = authHeader.split(' ');
 
   try {
-    jwt.verify(token, authConfig.jwt.secret);
+    const decoded = jwt.verify(token, authConfig.jwt.secret);
+
+    const { sub } = decoded as ITokenPayload;
+
+    console.log(sub);
+
+    request.user = {
+      id: sub,
+    };
 
     return next();
   } catch {
