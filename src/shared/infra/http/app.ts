@@ -7,6 +7,7 @@ import cors from 'cors';
 import 'express-async-errors';
 
 import AppError from '@shared/errors/AppError';
+
 import routes from './api/v1';
 
 import '@shared/container';

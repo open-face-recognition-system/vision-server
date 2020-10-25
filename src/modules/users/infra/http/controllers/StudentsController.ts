@@ -3,7 +3,7 @@ import { container } from 'tsyringe';
 import { classToClass } from 'class-transformer';
 import CreateStudentService from '@modules/users/services/CreateStudentService';
 
-export default class StudentsController {
+class StudentsController {
   public async create(request: Request, response: Response): Promise<Response> {
     const { enrollment, userId } = request.body;
 
@@ -13,3 +13,5 @@ export default class StudentsController {
     return response.json(classToClass(student));
   }
 }
+
+export default StudentsController;
