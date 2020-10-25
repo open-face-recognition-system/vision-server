@@ -3,6 +3,15 @@ import { container } from 'tsyringe';
 import PhotosService from '@modules/photos/services/PhotosService';
 
 class PhotosController {
+  public async show(request: Request, response: Response): Promise<Response> {
+    const userId = request.user.id;
+
+    const photosService = container.resolve(PhotosService);
+    const photos = await photosService.showUserPhotos(userId);
+
+    return response.json(photos);
+  }
+
   public async create(request: Request, response: Response): Promise<Response> {
     const userId = request.user.id;
     const { filename } = request.file;

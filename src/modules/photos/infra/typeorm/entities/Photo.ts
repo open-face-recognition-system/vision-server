@@ -24,7 +24,7 @@ class Photo {
 
   @Expose({ name: 'url' })
   getAvatarUrl(): string | null {
-    return this.path ? `${process.env.APP_API_URL}/files/${this.path}` : null;
+    return this.path ? `${process.env.APP_URL}/files/${this.path}` : null;
   }
 
   @CreateDateColumn({ name: 'created_at' })

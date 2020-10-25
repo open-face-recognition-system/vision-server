@@ -1,5 +1,6 @@
 import ICreatePhotoDOT from '@modules/photos/dtos/ICreatePhotoDOT';
 import IPhotosRepository from '@modules/photos/repositories/IPhotosRepository';
+import { classToClass } from 'class-transformer';
 import { getRepository, Repository } from 'typeorm';
 import Photo from '../entities/Photo';
 
@@ -11,8 +12,8 @@ class PhotosRepository implements IPhotosRepository {
   }
 
   public async listByUserId(userId: number): Promise<Photo[]> {
-    const photos = await this.ormRepository.find({ where: { userId } });
-    return photos;
+    const photos = await this.ormRepository.find({ where: { user: userId } });
+    return classToClass(photos);
   }
 
   public async findById(id: number): Promise<Photo | undefined> {
