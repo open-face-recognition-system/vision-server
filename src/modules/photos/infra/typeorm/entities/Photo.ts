@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Entity } from 'typeorm/decorator/entity/Entity';
+import PhotoType from './PhotoType';
 
 @Entity('photos')
 class Photo {
@@ -17,6 +18,12 @@ class Photo {
 
   @Column()
   path: string;
+
+  @Column({
+    type: 'enum',
+    enum: PhotoType,
+  })
+  photoType: PhotoType;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })

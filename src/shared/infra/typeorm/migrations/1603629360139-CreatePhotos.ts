@@ -18,6 +18,19 @@ export default class CreatePhotos1603629360139 implements MigrationInterface {
             isUnique: true,
           },
           {
+            name: 'photoType',
+            type: 'enum',
+            enum: [
+              'normal',
+              'smilling',
+              'closedEyes',
+              'rightSide',
+              'leftSide',
+              'withoutGlasses',
+            ],
+            enumName: 'photoType',
+          },
+          {
             name: 'user_id',
             type: 'int',
           },

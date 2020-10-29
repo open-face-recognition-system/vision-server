@@ -21,10 +21,15 @@ class PhotosRepository implements IPhotosRepository {
     return photo;
   }
 
-  public async create({ path, user }: ICreatePhotoDOT): Promise<Photo> {
+  public async create({
+    path,
+    user,
+    photoType,
+  }: ICreatePhotoDOT): Promise<Photo> {
     const photo = this.ormRepository.create({
       path,
       user,
+      photoType,
     });
     await this.ormRepository.save(photo);
     return photo;
