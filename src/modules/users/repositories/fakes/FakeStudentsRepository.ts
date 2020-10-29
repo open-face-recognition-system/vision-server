@@ -35,7 +35,7 @@ class FakeStudentsRepository implements IStudentsRepository {
 
   public async delete(id: number): Promise<void> {
     const findIndex = this.students.findIndex(
-      findTeacher => findTeacher.id === id,
+      findStudent => findStudent.id === id,
     );
     this.students.splice(findIndex, 1);
   }

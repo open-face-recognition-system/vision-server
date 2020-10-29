@@ -6,6 +6,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import 'express-async-errors';
 
+import uploadConfig from '@config/upload';
 import AppError from '@shared/errors/AppError';
 import routes from './api/v1';
 
@@ -15,6 +16,7 @@ import '@shared/infra/typeorm';
 const app = express();
 
 app.use(express.json());
+app.use('/files', express.static(uploadConfig.uploadsFolder));
 app.use(
   cors({
     exposedHeaders: ['X-Total-Count', 'X-Total-Page'],

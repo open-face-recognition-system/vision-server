@@ -5,6 +5,7 @@ import teachersRouter from '@modules/users/infra/http/routes/teachers.routes';
 import studentsRouter from '@modules/users/infra/http/routes/students.routes';
 import sessionsRouter from '@modules/users/infra/http/routes/sessions.routes';
 import profilesRouter from '@modules/users/infra/http/routes/profiles.routes';
+import photosRouter from '@modules/photos/infra/http/routes/photos.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const v1Router = Router();
@@ -19,5 +20,6 @@ v1Router.use((request: Request, response: Response, next: NextFunction) => {
 });
 
 v1Router.use('/profiles', profilesRouter);
+v1Router.use('/photos', photosRouter);
 
 export default v1Router;

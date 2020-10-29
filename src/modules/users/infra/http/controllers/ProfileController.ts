@@ -5,7 +5,7 @@ import { classToClass } from 'class-transformer';
 import UpdateProfileService from '@modules/users/services/UpdateProfileService';
 import ShowProfileService from '@modules/users/services/ShowProfileService';
 
-export default class ProfileController {
+class ProfileController {
   public async show(request: Request, response: Response): Promise<Response> {
     const userId = request.user.id;
 
@@ -31,3 +31,5 @@ export default class ProfileController {
     return response.json(classToClass(user));
   }
 }
+
+export default ProfileController;
