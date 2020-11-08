@@ -36,7 +36,7 @@ export default class CreateRecognitionFiles1604017427302
         foreignKeys: [
           {
             name: 'RecognitionFileSubject',
-            referencedTableName: 'subject',
+            referencedTableName: 'subjects',
             referencedColumnNames: ['id'],
             columnNames: ['subject_id'],
             onDelete: 'CASCADE',
