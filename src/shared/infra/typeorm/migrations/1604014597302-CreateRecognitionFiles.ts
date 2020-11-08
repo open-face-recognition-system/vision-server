@@ -1,10 +1,11 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export default class CreateSubjects1604014582425 implements MigrationInterface {
+export default class CreateRecognitionFiles1604017427302
+  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'subjects',
+        name: 'recognition_files',
         columns: [
           {
             name: 'id',
@@ -13,19 +14,12 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
             isGenerated: true,
           },
           {
-            name: 'name',
+            name: 'path',
             type: 'varchar',
+            isUnique: true,
           },
           {
-            name: 'description',
-            type: 'varchar',
-          },
-          {
-            name: 'course',
-            type: 'varchar',
-          },
-          {
-            name: 'teacher_id',
+            name: 'subject_id',
             type: 'int',
           },
           {
@@ -41,10 +35,10 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            name: 'SubjectTeacher',
-            referencedTableName: 'teachers',
+            name: 'RecognitionFileSubject',
+            referencedTableName: 'subject',
             referencedColumnNames: ['id'],
-            columnNames: ['teacher_id'],
+            columnNames: ['subject_id'],
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
           },
@@ -54,6 +48,6 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('subjects');
+    await queryRunner.dropTable('recognition_files');
   }
 }

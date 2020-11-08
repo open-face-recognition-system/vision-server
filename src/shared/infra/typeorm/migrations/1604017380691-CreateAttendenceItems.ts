@@ -1,10 +1,11 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export default class CreateSubjects1604014582425 implements MigrationInterface {
+export default class CreateAttendenceItems1604017380691
+  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'subjects',
+        name: 'attendence_items',
         columns: [
           {
             name: 'id',
@@ -13,19 +14,15 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
             isGenerated: true,
           },
           {
-            name: 'name',
-            type: 'varchar',
+            name: 'is_present',
+            type: 'boolean',
           },
           {
-            name: 'description',
-            type: 'varchar',
+            name: 'student_id',
+            type: 'int',
           },
           {
-            name: 'course',
-            type: 'varchar',
-          },
-          {
-            name: 'teacher_id',
+            name: 'class_id',
             type: 'int',
           },
           {
@@ -41,10 +38,18 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            name: 'SubjectTeacher',
-            referencedTableName: 'teachers',
+            name: 'AttendenceItemStudent',
+            referencedTableName: 'students',
             referencedColumnNames: ['id'],
-            columnNames: ['teacher_id'],
+            columnNames: ['student_id'],
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+          },
+          {
+            name: 'AttendenceItemClass',
+            referencedTableName: 'classes',
+            referencedColumnNames: ['id'],
+            columnNames: ['class_id'],
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
           },
@@ -54,6 +59,6 @@ export default class CreateSubjects1604014582425 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('subjects');
+    await queryRunner.dropTable('attendence_items');
   }
 }

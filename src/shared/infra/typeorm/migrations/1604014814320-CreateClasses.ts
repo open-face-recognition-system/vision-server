@@ -29,6 +29,10 @@ export default class CreateClasses1604014814320 implements MigrationInterface {
             type: 'int',
           },
           {
+            name: 'semester_id',
+            type: 'int',
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             default: 'now()',
@@ -45,6 +49,14 @@ export default class CreateClasses1604014814320 implements MigrationInterface {
             referencedTableName: 'subjects',
             referencedColumnNames: ['id'],
             columnNames: ['subject_id'],
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+          },
+          {
+            name: 'ClassSemester',
+            referencedTableName: 'subjects',
+            referencedColumnNames: ['id'],
+            columnNames: ['semester_id'],
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
           },
