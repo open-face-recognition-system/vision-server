@@ -33,6 +33,7 @@ class PhotosService {
   }
 
   public async addUserPhoto(userId: number, filename: string): Promise<Photo> {
+    // Verify each new photo based on your type
     const user = await this.usersRepository.findById(userId);
 
     if (!user) {
