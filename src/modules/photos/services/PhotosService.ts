@@ -3,8 +3,10 @@ import { injectable, inject } from 'tsyringe';
 import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 import IUsersRepository from '@modules/users/repositories/IUsersRepository';
 import AppError from '@shared/errors/AppError';
+import userPhotosConfig from '@config/userPhotos';
 import Photo from '../infra/typeorm/entities/Photo';
 import IPhotosRepository from '../repositories/IPhotosRepository';
+import PhotoType from '../infra/typeorm/entities/PhotoType';
 
 @injectable()
 class PhotosService {
@@ -32,18 +34,38 @@ class PhotosService {
     return photos;
   }
 
-  public async addUserPhoto(userId: number, filename: string): Promise<Photo> {
-    // Verify each new photo based on your type
+  public async addUserPhoto(
+    userId: number,
+    photoType: PhotoType,
+    filename: string,
+  ): Promise<Photo> {
+    const { photoLimit, quantityOfEachPhoto } = userPhotosConfig;
     const user = await this.usersRepository.findById(userId);
 
     if (!user) {
       throw new AppError('User does not exists');
     }
 
+    const userPhotos = await this.photosRepository.listByUserId(userId);
+
+    if (userPhotos.length === photoLimit) {
+      throw new AppError('User has already reached the photos limit');
+    }
+
+    const photosType = await this.photosRepository.listByPhotoType(
+      userId,
+      photoType,
+    );
+
+    if (photosType.length > quantityOfEachPhoto) {
+      throw new AppError('Photo limit of this type reached');
+    }
+
     const path = await this.storageProvider.saveFile(filename);
 
     const photo = await this.photosRepository.create({
       path,
+      photoType,
       user,
     });
 

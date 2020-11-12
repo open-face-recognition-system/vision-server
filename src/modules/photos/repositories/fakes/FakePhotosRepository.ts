@@ -1,5 +1,6 @@
 import ICreatePhotoDOT from '@modules/photos/dtos/ICreatePhotoDOT';
 import Photo from '@modules/photos/infra/typeorm/entities/Photo';
+import PhotoType from '@modules/photos/infra/typeorm/entities/PhotoType';
 import IPhotosRepository from '../IPhotosRepository';
 
 class FakePhotosRepository implements IPhotosRepository {
@@ -23,6 +24,16 @@ class FakePhotosRepository implements IPhotosRepository {
     this.photos.push(newPhoto);
 
     return newPhoto;
+  }
+
+  public async listByPhotoType(
+    userId: number,
+    photoType: PhotoType,
+  ): Promise<Photo[]> {
+    const findPhoto = this.photos.filter(
+      photo => photo.photoType === photoType,
+    );
+    return findPhoto;
   }
 
   public async delete(id: number): Promise<void> {
