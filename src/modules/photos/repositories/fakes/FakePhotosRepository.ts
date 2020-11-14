@@ -6,8 +6,10 @@ import IPhotosRepository from '../IPhotosRepository';
 class FakePhotosRepository implements IPhotosRepository {
   private photos: Photo[] = [];
 
-  public async listByUserId(userId: number): Promise<Photo[]> {
-    const findPhoto = this.photos.filter(photo => photo.user.id === userId);
+  public async listByStudentId(studentId: number): Promise<Photo[]> {
+    const findPhoto = this.photos.filter(
+      photo => photo.student.id === studentId,
+    );
     return findPhoto;
   }
 

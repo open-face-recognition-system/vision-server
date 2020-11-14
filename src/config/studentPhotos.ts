@@ -1,4 +1,4 @@
 export default {
   photoLimit: 30,
-  quantityOfEachPhoto: 3,
+  quantityOfEachPhoto: 6,
 };

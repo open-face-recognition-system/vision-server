@@ -12,8 +12,10 @@ class PhotosRepository implements IPhotosRepository {
     this.ormRepository = getRepository(Photo);
   }
 
-  public async listByUserId(userId: number): Promise<Photo[]> {
-    const photos = await this.ormRepository.find({ where: { user: userId } });
+  public async listByStudentId(studentId: number): Promise<Photo[]> {
+    const photos = await this.ormRepository.find({
+      where: { user: studentId },
+    });
     return classToClass(photos);
   }
 
@@ -32,12 +34,12 @@ class PhotosRepository implements IPhotosRepository {
 
   public async create({
     path,
-    user,
+    student,
     photoType,
   }: ICreatePhotoDOT): Promise<Photo> {
     const photo = this.ormRepository.create({
       path,
-      user,
+      student,
       photoType,
     });
     await this.ormRepository.save(photo);

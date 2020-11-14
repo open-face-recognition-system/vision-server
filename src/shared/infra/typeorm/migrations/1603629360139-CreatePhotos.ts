@@ -31,7 +31,7 @@ export default class CreatePhotos1603629360139 implements MigrationInterface {
             enumName: 'photoType',
           },
           {
-            name: 'user_id',
+            name: 'student_id',
             type: 'int',
           },
           {
@@ -48,9 +48,9 @@ export default class CreatePhotos1603629360139 implements MigrationInterface {
         foreignKeys: [
           {
             name: 'PhotoUser',
-            referencedTableName: 'users',
+            referencedTableName: 'students',
             referencedColumnNames: ['id'],
-            columnNames: ['user_id'],
+            columnNames: ['student_id'],
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
           },
