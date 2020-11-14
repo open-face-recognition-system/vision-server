@@ -20,14 +20,7 @@ export default class CreatePhotos1603629360139 implements MigrationInterface {
           {
             name: 'photoType',
             type: 'enum',
-            enum: [
-              'normal',
-              'smilling',
-              'closedEyes',
-              'rightSide',
-              'leftSide',
-              'withoutGlasses',
-            ],
+            enum: ['normal', 'smilling', 'closedEyes', 'rightSide', 'leftSide'],
             enumName: 'photoType',
           },
           {
@@ -47,7 +40,7 @@ export default class CreatePhotos1603629360139 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            name: 'PhotoUser',
+            name: 'PhotoStudent',
             referencedTableName: 'students',
             referencedColumnNames: ['id'],
             columnNames: ['student_id'],

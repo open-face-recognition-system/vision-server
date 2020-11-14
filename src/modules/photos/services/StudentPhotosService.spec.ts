@@ -6,7 +6,6 @@ import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepo
 import studentPhotosConfig from '@config/studentPhotos';
 import StudentPhotosService from './StudentPhotosService';
 import FakePhotosRepository from '../repositories/fakes/FakePhotosRepository';
-import PhotoType from '../infra/typeorm/entities/PhotoType';
 
 let fakeStudentsRepository: FakeStudentsRepository;
 let fakeUsersRepository: FakeUsersRepository;
@@ -43,7 +42,7 @@ describe('Student Photos Service', () => {
 
     const response = await studentPhotosService.addPhoto(
       student.id,
-      PhotoType.NORMAL,
+      'normal',
       'filename',
     );
 
@@ -64,11 +63,7 @@ describe('Student Photos Service', () => {
       enrollment: '123123',
     });
 
-    await studentPhotosService.addPhoto(
-      student.id,
-      PhotoType.NORMAL,
-      'filename',
-    );
+    await studentPhotosService.addPhoto(student.id, 'normal', 'filename');
 
     const response = await studentPhotosService.showPhotos(student.id);
 
@@ -90,7 +85,7 @@ describe('Student Photos Service', () => {
 
     const photo = await studentPhotosService.addPhoto(
       student.id,
-      PhotoType.NORMAL,
+      'normal',
       'filename',
     );
 
@@ -118,7 +113,7 @@ describe('Student Photos Service', () => {
 
     const photo = await studentPhotosService.addPhoto(
       student.id,
-      PhotoType.NORMAL,
+      'normal',
       'filename',
     );
 
@@ -145,11 +140,11 @@ describe('Student Photos Service', () => {
     });
 
     const photoTypes = [
-      PhotoType.NORMAL,
-      PhotoType.SMILING,
-      PhotoType.CLOSED_EYES,
-      PhotoType.RIGHT_SIDE,
-      PhotoType.LEFT_SIDE,
+      'normal',
+      'smilling',
+      'closedEyes',
+      'rightSide',
+      'leftSide',
     ];
 
     for (let i = 0; i < photoTypes.length; i += 1) {
@@ -163,7 +158,7 @@ describe('Student Photos Service', () => {
     }
 
     expect(
-      studentPhotosService.addPhoto(student.id, PhotoType.NORMAL, 'filename'),
+      studentPhotosService.addPhoto(student.id, 'normal', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
@@ -183,21 +178,35 @@ describe('Student Photos Service', () => {
     });
 
     for (let j = 0; j < quantityOfEachPhoto; j += 1) {
-      await studentPhotosService.addPhoto(
-        student.id,
-        PhotoType.NORMAL,
-        'filename',
-      );
+      await studentPhotosService.addPhoto(student.id, 'normal', 'filename');
     }
 
     expect(
-      studentPhotosService.addPhoto(student.id, PhotoType.NORMAL, 'filename'),
+      studentPhotosService.addPhoto(student.id, 'normal', 'filename'),
+    ).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('should not be able to add new user photo with enhandled photo type', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.STUDENT,
+    });
+
+    const student = await fakeStudentsRepository.create({
+      user,
+      enrollment: '123123',
+    });
+
+    expect(
+      studentPhotosService.addPhoto(student.id, 'unhandled', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should not be able to add new user photo with non existing user', async () => {
     expect(
-      studentPhotosService.addPhoto(0, PhotoType.NORMAL, 'filename'),
+      studentPhotosService.addPhoto(0, 'normal', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 

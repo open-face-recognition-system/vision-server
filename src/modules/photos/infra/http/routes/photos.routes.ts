@@ -3,16 +3,16 @@ import { Router } from 'express';
 import multer from 'multer';
 import uploadConfig from '@config/upload';
 
-import PhotosController from '../controllers/PhotosController';
+import StudentPhotosController from '../controllers/StudentPhotosController';
 
 const upload = multer(uploadConfig);
 
 const photosRouter = Router();
-const photosController = new PhotosController();
+const studentPhotosController = new StudentPhotosController();
 
-photosRouter.get('/', photosController.show);
-photosRouter.post('/', upload.single('file'), photosController.create);
-photosRouter.put('/:id', upload.single('file'), photosController.update);
-photosRouter.delete('/:id', photosController.delete);
+photosRouter.get('/', studentPhotosController.show);
+photosRouter.post('/', upload.single('file'), studentPhotosController.create);
+photosRouter.put('/:id', upload.single('file'), studentPhotosController.update);
+photosRouter.delete('/:id', studentPhotosController.delete);
 
 export default photosRouter;

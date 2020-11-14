@@ -14,7 +14,7 @@ class PhotosRepository implements IPhotosRepository {
 
   public async listByStudentId(studentId: number): Promise<Photo[]> {
     const photos = await this.ormRepository.find({
-      where: { user: studentId },
+      where: { student: studentId },
     });
     return classToClass(photos);
   }

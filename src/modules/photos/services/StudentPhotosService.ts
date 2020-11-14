@@ -29,6 +29,27 @@ class StudentPhotosService {
     this.storageProvider = storageProvider;
   }
 
+  private unknownPhotoType(photoType: string): PhotoType {
+    throw new AppError(`Unhandled PhotoType value found ${photoType}`);
+  }
+
+  private parsePhotoTypeStringToEnum(photoType: string): PhotoType {
+    switch (photoType) {
+      case 'normal':
+        return PhotoType.NORMAL;
+      case 'smilling':
+        return PhotoType.SMILING;
+      case 'closedEyes':
+        return PhotoType.CLOSED_EYES;
+      case 'rightSide':
+        return PhotoType.RIGHT_SIDE;
+      case 'leftSide':
+        return PhotoType.LEFT_SIDE;
+      default:
+        return this.unknownPhotoType(photoType);
+    }
+  }
+
   public async showPhotos(studentId: number): Promise<Photo[]> {
     const { quantityOfEachPhoto } = studentPhotosConfig;
 
@@ -56,7 +77,7 @@ class StudentPhotosService {
       const index = fooStudentPhotos.findIndex(fooStudentPhoto => {
         return (
           photo.photoType === fooStudentPhoto.photoType &&
-          fooStudentPhoto.path !== ''
+          fooStudentPhoto.path === ''
         );
       });
       fooStudentPhotos[index] = photo;
@@ -67,7 +88,7 @@ class StudentPhotosService {
 
   public async addPhoto(
     studentId: number,
-    photoType: PhotoType,
+    photoType: string,
     filename: string,
   ): Promise<Photo> {
     const { photoLimit, quantityOfEachPhoto } = studentPhotosConfig;
@@ -85,9 +106,11 @@ class StudentPhotosService {
       throw new AppError('Student has already reached the photos limit');
     }
 
+    const parsedPhotoType = this.parsePhotoTypeStringToEnum(photoType);
+
     const photosType = await this.photosRepository.listByPhotoType(
       studentId,
-      photoType,
+      parsedPhotoType,
     );
 
     if (photosType.length >= quantityOfEachPhoto) {
@@ -98,7 +121,7 @@ class StudentPhotosService {
 
     const photo = await this.photosRepository.create({
       path,
-      photoType,
+      photoType: parsedPhotoType,
       student,
     });
 

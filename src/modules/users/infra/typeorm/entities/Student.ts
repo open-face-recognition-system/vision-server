@@ -9,8 +9,6 @@ import {
 import { Entity } from 'typeorm/decorator/entity/Entity';
 import User from './User';
 
-@ManyToOne(() => User)
-@JoinColumn({ name: 'user_id' })
 @Entity('students')
 class Student {
   @PrimaryGeneratedColumn()
