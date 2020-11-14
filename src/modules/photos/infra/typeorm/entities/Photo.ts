@@ -1,4 +1,4 @@
-import User from '@modules/users/infra/typeorm/entities/User';
+import Student from '@modules/users/infra/typeorm/entities/Student';
 import { Expose } from 'class-transformer';
 import {
   Column,
@@ -25,9 +25,9 @@ class Photo {
   })
   photoType: PhotoType;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @ManyToOne(() => Student)
+  @JoinColumn({ name: 'student_id' })
+  student: Student;
 
   @Expose({ name: 'url' })
   getUrl(): string | null {

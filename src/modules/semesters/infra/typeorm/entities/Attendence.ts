@@ -11,7 +11,7 @@ import {
 import Class from './Class';
 
 @Entity('attendence_items')
-class AttendenceItem {
+class Attendence {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -33,4 +33,4 @@ class AttendenceItem {
   updatedAt: Date;
 }
 
-export default AttendenceItem;
+export default Attendence;

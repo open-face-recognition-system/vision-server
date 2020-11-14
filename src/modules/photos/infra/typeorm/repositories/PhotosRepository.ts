@@ -3,6 +3,7 @@ import IPhotosRepository from '@modules/photos/repositories/IPhotosRepository';
 import { classToClass } from 'class-transformer';
 import { getRepository, Repository } from 'typeorm';
 import Photo from '../entities/Photo';
+import PhotoType from '../entities/PhotoType';
 
 class PhotosRepository implements IPhotosRepository {
   private ormRepository: Repository<Photo>;
@@ -11,8 +12,10 @@ class PhotosRepository implements IPhotosRepository {
     this.ormRepository = getRepository(Photo);
   }
 
-  public async listByUserId(userId: number): Promise<Photo[]> {
-    const photos = await this.ormRepository.find({ where: { user: userId } });
+  public async listByStudentId(studentId: number): Promise<Photo[]> {
+    const photos = await this.ormRepository.find({
+      where: { student: studentId },
+    });
     return classToClass(photos);
   }
 
@@ -21,14 +24,22 @@ class PhotosRepository implements IPhotosRepository {
     return photo;
   }
 
+  public async listByPhotoType(
+    userId: number,
+    photoType: PhotoType,
+  ): Promise<Photo[]> {
+    const photos = await this.ormRepository.find({ where: { photoType } });
+    return photos;
+  }
+
   public async create({
     path,
-    user,
+    student,
     photoType,
   }: ICreatePhotoDOT): Promise<Photo> {
     const photo = this.ormRepository.create({
       path,
-      user,
+      student,
       photoType,
     });
     await this.ormRepository.save(photo);
