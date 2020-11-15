@@ -2,6 +2,7 @@ import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import { getRepository, Repository } from 'typeorm';
 import Student from '../entities/Student';
+import User from '../entities/User';
 
 class StudentsRepository implements IStudentsRepository {
   private ormRepository: Repository<Student>;
@@ -17,6 +18,11 @@ class StudentsRepository implements IStudentsRepository {
 
   public async findById(id: number): Promise<Student | undefined> {
     const student = await this.ormRepository.findOne(id);
+    return student;
+  }
+
+  public async findByUser(user: User): Promise<Student | undefined> {
+    const student = await this.ormRepository.findOne({ where: { user } });
     return student;
   }
 

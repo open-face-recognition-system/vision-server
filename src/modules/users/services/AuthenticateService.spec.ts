@@ -3,8 +3,12 @@ import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepo
 import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
 import AuthenticateUserService from './AuthenticateUserService';
 import Role from '../infra/typeorm/entities/Role';
+import FakeStudentsRepository from '../repositories/fakes/FakeStudentsRepository';
+import FakeTeachersRepository from '../repositories/fakes/FakeTeachersRepository';
 
 let fakeUsersRepository: FakeUsersRepository;
+let fakeStudentsRepository: FakeStudentsRepository;
+let fakeTeachersRepository: FakeTeachersRepository;
 let fakeHashProvider: FakeHashProvider;
 let authenticateUser: AuthenticateUserService;
 
@@ -15,6 +19,8 @@ describe('Authenticate User', () => {
 
     authenticateUser = new AuthenticateUserService(
       fakeUsersRepository,
+      fakeStudentsRepository,
+      fakeTeachersRepository,
       fakeHashProvider,
     );
   });

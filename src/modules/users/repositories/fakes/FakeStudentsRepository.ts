@@ -1,5 +1,6 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import Student from '@modules/users/infra/typeorm/entities/Student';
+import User from '@modules/users/infra/typeorm/entities/User';
 import IStudentsRepository from '../IStudentsRepository';
 
 class FakeStudentsRepository implements IStudentsRepository {
@@ -11,6 +12,11 @@ class FakeStudentsRepository implements IStudentsRepository {
 
   public async findById(id: number): Promise<Student | undefined> {
     const findStudent = this.students.find(student => student.id === id);
+    return findStudent;
+  }
+
+  public async findByUser(user: User): Promise<Student | undefined> {
+    const findStudent = this.students.find(student => student.user === user);
     return findStudent;
   }
 
