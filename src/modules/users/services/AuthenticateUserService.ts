@@ -42,6 +42,8 @@ class AuthenticateUserService {
     hashProvider: IHashProvider,
   ) {
     this.usersRepository = usersRepository;
+    this.studentsRepository = studentsRepository;
+    this.teachersRepository = teachersRepository;
     this.hashProvider = hashProvider;
   }
 

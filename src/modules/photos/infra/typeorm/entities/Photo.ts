@@ -1,5 +1,3 @@
-import Student from '@modules/users/infra/typeorm/entities/Student';
-import { Expose } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -8,7 +6,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Expose } from 'class-transformer';
 import { Entity } from 'typeorm/decorator/entity/Entity';
+import Student from '@modules/users/infra/typeorm/entities/Student';
 import PhotoType from './PhotoType';
 
 @Entity('photos')
