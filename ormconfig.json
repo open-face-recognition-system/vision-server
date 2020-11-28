@@ -13,5 +13,11 @@
   ],
   "cli": {
     "migrationsDir": "./src/shared/infra/typeorm/migrations"
-  }
+  },
+  "seeds": [
+    "./src/shared/infra/typeorm/seeds/**/*{.ts,.js}"
+  ],
+  "factories": [
+    "./src/shared/infra/typeorm/factories/**/*{.ts,.js}"
+  ]
 }
