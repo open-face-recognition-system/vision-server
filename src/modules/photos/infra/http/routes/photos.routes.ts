@@ -5,7 +5,7 @@ import uploadConfig from '@config/upload';
 
 import StudentPhotosController from '../controllers/StudentPhotosController';
 
-const upload = multer(uploadConfig);
+const upload = multer(uploadConfig.multer);
 
 const photosRouter = Router();
 const studentPhotosController = new StudentPhotosController();
