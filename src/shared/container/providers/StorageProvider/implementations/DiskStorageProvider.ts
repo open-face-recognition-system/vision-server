@@ -24,6 +24,11 @@ class DiskStorageProvider implements IStorageProvider {
 
     await fs.promises.unlink(filePath);
   }
+
+  public async deleteTmpFile(file: string): Promise<void> {
+    const originalPath = path.resolve(uploadConfig.tmpFolder, file);
+    await fs.promises.unlink(originalPath);
+  }
 }
 
 export default DiskStorageProvider;

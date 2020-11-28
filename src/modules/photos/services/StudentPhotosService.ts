@@ -95,6 +95,7 @@ class StudentPhotosService {
     const student = await this.studentsRepository.findById(studentId);
 
     if (!student) {
+      await this.storageProvider.deleteTmpFile(filename);
       throw new AppError('Student does not exists');
     }
 
@@ -103,6 +104,7 @@ class StudentPhotosService {
     );
 
     if (studentPhotos.length === photoLimit) {
+      await this.storageProvider.deleteTmpFile(filename);
       throw new AppError('Student has already reached the photos limit');
     }
 
@@ -114,6 +116,7 @@ class StudentPhotosService {
     );
 
     if (photosType.length >= quantityOfEachPhoto) {
+      await this.storageProvider.deleteTmpFile(filename);
       throw new AppError('Photo limit of this type reached');
     }
 

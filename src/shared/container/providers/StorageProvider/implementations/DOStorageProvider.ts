@@ -44,6 +44,8 @@ class DOStorageProvider implements IStorageProvider {
       })
       .promise();
 
+    await fs.promises.unlink(originalPath);
+
     return file;
   }
 
@@ -55,6 +57,11 @@ class DOStorageProvider implements IStorageProvider {
         Key: file,
       })
       .promise();
+  }
+
+  public async deleteTmpFile(file: string): Promise<void> {
+    const originalPath = path.resolve(uploadConfig.tmpFolder, file);
+    await fs.promises.unlink(originalPath);
   }
 }
 
