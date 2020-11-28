@@ -79,7 +79,7 @@ class AuthenticateUserService {
       id = await this.getStudentId(user);
     }
 
-    if (user.role === Role.STUDENT) {
+    if (user.role === Role.TEACHER) {
       id = await this.getTeacherId(user);
     }
 

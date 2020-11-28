@@ -15,6 +15,8 @@ let authenticateUser: AuthenticateUserService;
 describe('Authenticate User', () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
+    fakeStudentsRepository = new FakeStudentsRepository();
+    fakeTeachersRepository = new FakeTeachersRepository();
     fakeHashProvider = new FakeHashProvider();
 
     authenticateUser = new AuthenticateUserService(
@@ -31,6 +33,84 @@ describe('Authenticate User', () => {
       email: 'johndoe@example.com',
       password: '123123',
       role: Role.ADMIN,
+    });
+
+    const response = await authenticateUser.execute({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    expect(response).toHaveProperty('token');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to authenticate a student', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.STUDENT,
+    });
+
+    await fakeStudentsRepository.create({
+      enrollment: '123123',
+      user,
+    });
+
+    const response = await authenticateUser.execute({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    expect(response).toHaveProperty('token');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to authenticate a user if student does not exists', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.STUDENT,
+    });
+
+    const response = await authenticateUser.execute({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    expect(response).toHaveProperty('token');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to authenticate a teacher', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.TEACHER,
+    });
+
+    await fakeTeachersRepository.create({
+      enrollment: '123123',
+      user,
+    });
+
+    const response = await authenticateUser.execute({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    expect(response).toHaveProperty('token');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to authenticate a user if teacher does not exists', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.TEACHER,
     });
 
     const response = await authenticateUser.execute({
