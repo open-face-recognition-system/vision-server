@@ -11,6 +11,8 @@ import ITeachersRepository from '@modules/users/repositories/ITeachersRepository
 import TeachersRepository from '@modules/users/infra/typeorm/repositories/TeachersRepository';
 import IPhotosRepository from '@modules/photos/repositories/IPhotosRepository';
 import PhotosRepository from '@modules/photos/infra/typeorm/repositories/PhotosRepository';
+import IRefreshTokensRepository from '@modules/users/repositories/IRefreshTokensRepository';
+import RefreshTokensRepository from '@modules/users/infra/typeorm/repositories/RefreshTokensRepository';
 
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
@@ -30,4 +32,9 @@ container.registerSingleton<ITeachersRepository>(
 container.registerSingleton<IPhotosRepository>(
   'PhotosRepository',
   PhotosRepository,
+);
+
+container.registerSingleton<IRefreshTokensRepository>(
+  'RefreshTokensRepository',
+  RefreshTokensRepository,
 );

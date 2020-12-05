@@ -5,10 +5,12 @@ import AuthenticateUserService from './AuthenticateUserService';
 import Role from '../infra/typeorm/entities/Role';
 import FakeStudentsRepository from '../repositories/fakes/FakeStudentsRepository';
 import FakeTeachersRepository from '../repositories/fakes/FakeTeachersRepository';
+import FakeRefreshTokensRepository from '../repositories/fakes/FakeRefreshTokensRepository';
 
 let fakeUsersRepository: FakeUsersRepository;
 let fakeStudentsRepository: FakeStudentsRepository;
 let fakeTeachersRepository: FakeTeachersRepository;
+let fakeRefreshTokensRepository: FakeRefreshTokensRepository;
 let fakeHashProvider: FakeHashProvider;
 let authenticateUser: AuthenticateUserService;
 
@@ -17,12 +19,14 @@ describe('Authenticate User', () => {
     fakeUsersRepository = new FakeUsersRepository();
     fakeStudentsRepository = new FakeStudentsRepository();
     fakeTeachersRepository = new FakeTeachersRepository();
+    fakeRefreshTokensRepository = new FakeRefreshTokensRepository();
     fakeHashProvider = new FakeHashProvider();
 
     authenticateUser = new AuthenticateUserService(
       fakeUsersRepository,
       fakeStudentsRepository,
       fakeTeachersRepository,
+      fakeRefreshTokensRepository,
       fakeHashProvider,
     );
   });
@@ -35,12 +39,36 @@ describe('Authenticate User', () => {
       role: Role.ADMIN,
     });
 
-    const response = await authenticateUser.execute({
+    const response = await authenticateUser.signIn({
       email: 'johndoe@example.com',
       password: '123123',
     });
 
     expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to authenticate a admin two times', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.ADMIN,
+    });
+
+    await authenticateUser.signIn({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    const response = await authenticateUser.signIn({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
     expect(response.user).toEqual(user);
   });
 
@@ -57,12 +85,13 @@ describe('Authenticate User', () => {
       user,
     });
 
-    const response = await authenticateUser.execute({
+    const response = await authenticateUser.signIn({
       email: 'johndoe@example.com',
       password: '123123',
     });
 
     expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
     expect(response.user).toEqual(user);
   });
 
@@ -74,12 +103,13 @@ describe('Authenticate User', () => {
       role: Role.STUDENT,
     });
 
-    const response = await authenticateUser.execute({
+    const response = await authenticateUser.signIn({
       email: 'johndoe@example.com',
       password: '123123',
     });
 
     expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
     expect(response.user).toEqual(user);
   });
 
@@ -96,12 +126,13 @@ describe('Authenticate User', () => {
       user,
     });
 
-    const response = await authenticateUser.execute({
+    const response = await authenticateUser.signIn({
       email: 'johndoe@example.com',
       password: '123123',
     });
 
     expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
     expect(response.user).toEqual(user);
   });
 
@@ -113,18 +144,39 @@ describe('Authenticate User', () => {
       role: Role.TEACHER,
     });
 
-    const response = await authenticateUser.execute({
+    const response = await authenticateUser.signIn({
       email: 'johndoe@example.com',
       password: '123123',
     });
 
     expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
+    expect(response.user).toEqual(user);
+  });
+
+  it('should be able to refresh a token with valid refreshToken', async () => {
+    const user = await fakeUsersRepository.create({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123123',
+      role: Role.TEACHER,
+    });
+
+    const { refreshToken } = await authenticateUser.signIn({
+      email: 'johndoe@example.com',
+      password: '123123',
+    });
+
+    const response = await authenticateUser.refreshToken(refreshToken);
+
+    expect(response).toHaveProperty('token');
+    expect(response).toHaveProperty('refreshToken');
     expect(response.user).toEqual(user);
   });
 
   it('should not be able to authenticate with non existing user', async () => {
     expect(
-      authenticateUser.execute({
+      authenticateUser.signIn({
         email: 'johndoe@example.com',
         password: '123123',
       }),
@@ -140,10 +192,22 @@ describe('Authenticate User', () => {
     });
 
     await expect(
-      authenticateUser.execute({
+      authenticateUser.signIn({
         email: 'johndoe@example.com',
         password: '123456',
       }),
+    ).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('should not be able to refresh token with non existing token', async () => {
+    expect(
+      authenticateUser.refreshToken('invalidRefreshToken'),
+    ).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('should not be able to refresh token with non existing token', async () => {
+    expect(
+      authenticateUser.refreshToken('07aeb8e6-e1b2-4115-bec4-04b9e13a925a'),
     ).rejects.toBeInstanceOf(AppError);
   });
 });

@@ -40,7 +40,8 @@
     "tsyringe": "^4.3.0",
     "typeorm": "^0.2.25",
     "typeorm-seeding": "^1.6.1",
-    "uuidv4": "^6.2.4"
+    "uuidv4": "^6.2.4",
+    "v4": "^0.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",

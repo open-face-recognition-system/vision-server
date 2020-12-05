@@ -1,5 +1,6 @@
 import { injectable, inject } from 'tsyringe';
 import { sign } from 'jsonwebtoken';
+import { isUuid } from 'uuidv4';
 import authConfig from '@config/auth';
 
 import AppError from '@shared/errors/AppError';
@@ -10,15 +11,17 @@ import User from '../infra/typeorm/entities/User';
 import Role from '../infra/typeorm/entities/Role';
 import IStudentsRepository from '../repositories/IStudentsRepository';
 import ITeachersRepository from '../repositories/ITeachersRepository';
+import IRefreshTokensRepository from '../repositories/IRefreshTokensRepository';
 
-interface IRequest {
+interface ISignInRequest {
   email: string;
   password: string;
 }
 
-interface IResponse {
+interface IAuthenticateResponse {
   user: User;
   token: string;
+  refreshToken: string;
 }
 
 @injectable()
@@ -29,6 +32,8 @@ class AuthenticateUserService {
 
   private teachersRepository: ITeachersRepository;
 
+  private refreshTokensRepository: IRefreshTokensRepository;
+
   private hashProvider: IHashProvider;
 
   constructor(
@@ -38,12 +43,15 @@ class AuthenticateUserService {
     studentsRepository: IStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
+    @inject('RefreshTokensRepository')
+    refreshTokensRepository: IRefreshTokensRepository,
     @inject('HashProvider')
     hashProvider: IHashProvider,
   ) {
     this.usersRepository = usersRepository;
     this.studentsRepository = studentsRepository;
     this.teachersRepository = teachersRepository;
+    this.refreshTokensRepository = refreshTokensRepository;
     this.hashProvider = hashProvider;
   }
 
@@ -57,7 +65,22 @@ class AuthenticateUserService {
     return teacher?.id || user.id;
   }
 
-  public async execute({ email, password }: IRequest): Promise<IResponse> {
+  private async getIdByUserRole(user: User): Promise<number> {
+    let { id } = user;
+    if (user.role === Role.STUDENT) {
+      id = await this.getStudentId(user);
+    }
+
+    if (user.role === Role.TEACHER) {
+      id = await this.getTeacherId(user);
+    }
+    return id;
+  }
+
+  public async signIn({
+    email,
+    password,
+  }: ISignInRequest): Promise<IAuthenticateResponse> {
     const user = await this.usersRepository.findByEmail(email);
 
     if (!user) {
@@ -73,15 +96,46 @@ class AuthenticateUserService {
       throw new AppError('Incorrect email/password combination.', 401);
     }
 
-    let { id } = user;
+    const id = await this.getIdByUserRole(user);
 
-    if (user.role === Role.STUDENT) {
-      id = await this.getStudentId(user);
+    const { secret, expiresIn } = authConfig.jwt;
+
+    const token = sign({ id, role: user.role }, secret, {
+      expiresIn,
+    });
+
+    let refreshUserToken = await this.refreshTokensRepository.findByUser(user);
+
+    if (!refreshUserToken) {
+      const newRefreshToken = await this.refreshTokensRepository.generate(user);
+      refreshUserToken = newRefreshToken;
     }
 
-    if (user.role === Role.TEACHER) {
-      id = await this.getTeacherId(user);
+    return {
+      user,
+      token,
+      refreshToken: refreshUserToken.refreshToken,
+    };
+  }
+
+  public async refreshToken(
+    refreshToken: string,
+  ): Promise<IAuthenticateResponse> {
+    if (!isUuid(refreshToken)) {
+      throw new AppError('Invalid refresh token.', 401);
     }
+
+    const refreshTokenExists = await this.refreshTokensRepository.findByToken(
+      refreshToken,
+    );
+
+    if (!refreshTokenExists) {
+      throw new AppError('Token not found.', 401);
+    }
+
+    const { refreshToken: newRefreshToken, user } = refreshTokenExists;
+
+    const id = await this.getIdByUserRole(user);
 
     const { secret, expiresIn } = authConfig.jwt;
 
@@ -92,6 +146,7 @@ class AuthenticateUserService {
     return {
       user,
       token,
+      refreshToken: newRefreshToken,
     };
   }
 }

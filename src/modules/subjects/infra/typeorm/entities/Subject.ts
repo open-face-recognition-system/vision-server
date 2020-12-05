@@ -1,4 +1,4 @@
-import RecognitionFile from '@modules/recognition/infra/typeorm/entities/RecognitionFile';
+import RecognitionFile from '@modules/semesters/recognition/infra/typeorm/entities/RecognitionFile';
 import Teacher from '@modules/users/infra/typeorm/entities/Teacher';
 import {
   Entity,
