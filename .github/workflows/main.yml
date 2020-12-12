@@ -52,7 +52,7 @@ jobs:
           script: cd ~/app/face-recognizer-server && yarn migration:run
       
       - name: Restar server
-      - uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
