@@ -3,62 +3,24 @@ import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepo
 import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
 import UpdateProfileService from './UpdateProfileService';
 import Role from '../infra/typeorm/entities/Role';
+import FakeStudentsRepository from '../repositories/fakes/FakeStudentsRepository';
 
 let fakeUsersRepository: FakeUsersRepository;
+let fakeStudentsRepository: FakeStudentsRepository;
 let fakeHashProvider: FakeHashProvider;
 let updateProfileService: UpdateProfileService;
 
 describe('UpdateProfile', () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
+    fakeStudentsRepository = new FakeStudentsRepository();
     fakeHashProvider = new FakeHashProvider();
 
     updateProfileService = new UpdateProfileService(
       fakeUsersRepository,
+      fakeStudentsRepository,
       fakeHashProvider,
     );
-  });
-
-  it('should be able update the profile', async () => {
-    const user = await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
-
-    const updatedUser = await updateProfileService.execute({
-      userId: user.id,
-      name: 'John Trê',
-      email: 'johntre@example.com',
-    });
-
-    expect(updatedUser.name).toBe('John Trê');
-    expect(updatedUser.email).toBe('johntre@example.com');
-  });
-
-  it('should not be able to change to another user email', async () => {
-    await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
-
-    const user = await fakeUsersRepository.create({
-      name: 'Test',
-      email: 'test@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
-
-    await expect(
-      updateProfileService.execute({
-        userId: user.id,
-        name: 'Test',
-        email: 'johndoe@example.com',
-      }),
-    ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should be able to update the password', async () => {
@@ -69,10 +31,13 @@ describe('UpdateProfile', () => {
       role: Role.ADMIN,
     });
 
+    const student = await fakeStudentsRepository.create({
+      enrollment: '123123',
+      user,
+    });
+
     const updatedUser = await updateProfileService.execute({
-      userId: user.id,
-      name: 'John Trê',
-      email: 'johntre@example.com',
+      userId: student.id,
       oldPassword: '123456',
       password: '123123',
     });
@@ -88,11 +53,14 @@ describe('UpdateProfile', () => {
       role: Role.ADMIN,
     });
 
+    const student = await fakeStudentsRepository.create({
+      enrollment: '123123',
+      user,
+    });
+
     await expect(
       updateProfileService.execute({
-        userId: user.id,
-        name: 'John Trê',
-        email: 'johntre@example.com',
+        userId: student.id,
         password: '123123',
       }),
     ).rejects.toBeInstanceOf(AppError);
@@ -106,11 +74,14 @@ describe('UpdateProfile', () => {
       role: Role.ADMIN,
     });
 
+    const student = await fakeStudentsRepository.create({
+      enrollment: '123123',
+      user,
+    });
+
     await expect(
       updateProfileService.execute({
-        userId: user.id,
-        name: 'John Trê',
-        email: 'johntre@example.com',
+        userId: student.id,
         oldPassword: '123123',
         password: '123123',
       }),
@@ -121,8 +92,6 @@ describe('UpdateProfile', () => {
     expect(
       updateProfileService.execute({
         userId: 0,
-        name: 'John Trê',
-        email: 'johntre@example.com',
       }),
     ).rejects.toBeInstanceOf(AppError);
   });

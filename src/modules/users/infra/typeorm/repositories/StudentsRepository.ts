@@ -17,7 +17,10 @@ class StudentsRepository implements IStudentsRepository {
   }
 
   public async findById(id: number): Promise<Student | undefined> {
-    const student = await this.ormRepository.findOne(id);
+    const student = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     return student;
   }
 
