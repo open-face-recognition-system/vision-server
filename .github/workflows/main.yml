@@ -11,42 +11,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.3
         with:
           node-version: 12.x
-      
+
       - name: Install dependencies
-        run: yarn 
-      
-      - name: Run build 
+        run: yarn
+
+      - name: Run build
         run: yarn build
- 
+
       - name: Copy dist to Digital Ocean
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }} 
+          key: ${{ secrets.SSH_KEY }}
           source: ".,!node_modules,!ormconfig.json"
           target: "~/app/face-recognizer-server"
-      
+
       - name: Install dependencies on Digital Ocean
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }} 
-          script: cd ~/app/face-recognizer-server && yarn && yarn migration:run
-   
-      - name: Restar server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }} 
-          script: pm2 restart server
+          key: ${{ secrets.SSH_KEY }}
+          script: cd ~/app/face-recognizer-server && yarn && yarn migration:run && pm2 restart server
