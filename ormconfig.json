@@ -4,20 +4,20 @@
   "port": 5432,
   "username": "postgres",
   "password": "docker",
-  "database": "ofrs",
+  "database": "open_frs",
   "entities": [
-    "./src/modules/**/infra/typeorm/entities/*.ts"
+    "./dist/modules/**/infra/typeorm/entities/*.js"
   ],
   "migrations": [
-    "./src/shared/infra/typeorm/migrations/*.ts"
+    "./dist/shared/infra/typeorm/migrations/*.js"
   ],
   "cli": {
-    "migrationsDir": "./src/shared/infra/typeorm/migrations"
+    "migrationsDir": "./dist/shared/infra/typeorm/migrations"
   },
   "seeds": [
-    "./src/shared/infra/typeorm/seeds/**/*{.ts,.js}"
+    "./dist/shared/infra/typeorm/seeds/**/*{.ts,.js}"
   ],
   "factories": [
-    "./src/shared/infra/typeorm/factories/**/*{.ts,.js}"
+    "./dist/shared/infra/typeorm/factories/**/*{.ts,.js}"
   ]
 }

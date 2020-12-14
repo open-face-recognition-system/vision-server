@@ -17,7 +17,8 @@ Icon
 # Tmp folder
 tmp/*
 
-.ormconfig.json
+# Orm config
+ormconfig.json
 
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
