@@ -39,7 +39,7 @@ class Photo {
       case 'disk':
         return this.path ? `${process.env.APP_URL}/files/${this.path}` : null;
       case 'do':
-        return `${process.env.DO_URL}/${this.path}`;
+        return `${process.env.DO_URL}/photos/${this.path}`;
       default:
         return null;
     }
