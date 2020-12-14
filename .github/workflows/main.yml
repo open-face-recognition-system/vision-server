@@ -40,17 +40,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }} 
-          script: cd ~/app/face-recognizer-server && yarn 
+          script: cd ~/app/face-recognizer-server && yarn && yarn migration:run
    
-      - name: Run migrations on Digital Ocean
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }} 
-          script: cd ~/app/face-recognizer-server && yarn migration:run
-      
       - name: Restar server
         uses: appleboy/ssh-action@master
         with:
