@@ -3,7 +3,7 @@ import Student from '../infra/typeorm/entities/Student';
 import User from '../infra/typeorm/entities/User';
 
 interface IStudentsRepository {
-  listAll(): Promise<Student[]>;
+  listAll(take: number, skip: number): Promise<Student[]>;
   findById(id: number): Promise<Student | undefined>;
   findByUser(user: User): Promise<Student | undefined>;
   findByEnrollment(enrollment: string): Promise<Student | undefined>;

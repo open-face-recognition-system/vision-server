@@ -6,8 +6,8 @@ import IStudentsRepository from '../IStudentsRepository';
 class FakeStudentsRepository implements IStudentsRepository {
   private students: Student[] = [];
 
-  public async listAll(): Promise<Student[]> {
-    return this.students;
+  public async listAll(take: number, skip: number): Promise<Student[]> {
+    return this.students.slice((skip - 1) * take, skip * take);
   }
 
   public async findById(id: number): Promise<Student | undefined> {

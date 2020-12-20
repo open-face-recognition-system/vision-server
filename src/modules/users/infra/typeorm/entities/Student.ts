@@ -1,8 +1,10 @@
+import Photo from '@modules/photos/infra/typeorm/entities/Photo';
 import {
   Column,
   CreateDateColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,6 +22,9 @@ class Student {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToMany(() => Photo, photo => photo.student)
+  photos: Photo[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

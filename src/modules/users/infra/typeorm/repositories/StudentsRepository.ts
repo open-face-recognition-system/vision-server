@@ -11,15 +11,19 @@ class StudentsRepository implements IStudentsRepository {
     this.ormRepository = getRepository(Student);
   }
 
-  public async listAll(): Promise<Student[]> {
-    const students = await this.ormRepository.find();
-    return students;
+  public async listAll(take: number, skip: number): Promise<Student[]> {
+    const [result] = await this.ormRepository.findAndCount({
+      take,
+      skip,
+      relations: ['user'],
+    });
+    return result;
   }
 
   public async findById(id: number): Promise<Student | undefined> {
     const student = await this.ormRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['user', 'photos'],
     });
     return student;
   }

@@ -2,8 +2,31 @@ import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import { classToClass } from 'class-transformer';
 import CreateStudentService from '@modules/users/services/CreateStudentService';
+import DefaultUserService from '@modules/users/services/DefaultUserService';
 
 class StudentsController {
+  public async list(request: Request, response: Response): Promise<Response> {
+    const take = request.query.take || 10;
+    const skip = request.query.skip || 0;
+
+    const defaultUserService = container.resolve(DefaultUserService);
+    const students = await defaultUserService.findAllStudents(
+      Number(take),
+      Number(skip),
+    );
+
+    return response.json(classToClass(students));
+  }
+
+  public async show(request: Request, response: Response): Promise<Response> {
+    const { id } = request.params;
+
+    const defaultUserService = container.resolve(DefaultUserService);
+    const student = await defaultUserService.findStudentById(Number(id));
+
+    return response.json(classToClass(student));
+  }
+
   public async create(request: Request, response: Response): Promise<Response> {
     const { enrollment, userId } = request.body;
 

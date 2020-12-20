@@ -7,6 +7,8 @@ import StudentsController from '../controllers/StudentsController';
 const studentsRouter = Router();
 const studentsController = new StudentsController();
 
+studentsRouter.get('/', studentsController.list);
+studentsRouter.get('/:id', studentsController.show);
 studentsRouter.post(
   '/',
   celebrate({

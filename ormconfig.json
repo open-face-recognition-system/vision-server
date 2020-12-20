@@ -6,18 +6,18 @@
   "password": "docker",
   "database": "open_frs",
   "entities": [
-    "./dist/modules/**/infra/typeorm/entities/*.js"
+    "./src/modules/**/infra/typeorm/entities/*.ts"
   ],
   "migrations": [
-    "./dist/shared/infra/typeorm/migrations/*.js"
+    "./src/shared/infra/typeorm/migrations/*.ts"
   ],
   "cli": {
-    "migrationsDir": "./dist/shared/infra/typeorm/migrations"
+    "migrationsDir": "./src/shared/infra/typeorm/migrations"
   },
   "seeds": [
-    "./dist/shared/infra/typeorm/seeds/**/*{.ts,.js}"
+    "./src/shared/infra/typeorm/seeds/**/*{.ts,.js}"
   ],
   "factories": [
-    "./dist/shared/infra/typeorm/factories/**/*{.ts,.js}"
+    "./src/shared/infra/typeorm/factories/**/*{.ts,.js}"
   ]
 }
