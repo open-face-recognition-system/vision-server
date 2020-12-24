@@ -6,14 +6,8 @@ import DefaultUserService from '@modules/users/services/DefaultUserService';
 
 class StudentsController {
   public async list(request: Request, response: Response): Promise<Response> {
-    const take = request.query.take || 10;
-    const skip = request.query.skip || 0;
-
     const defaultUserService = container.resolve(DefaultUserService);
-    const students = await defaultUserService.findAllStudents(
-      Number(take),
-      Number(skip),
-    );
+    const students = await defaultUserService.findAllStudents();
 
     return response.json(classToClass(students));
   }

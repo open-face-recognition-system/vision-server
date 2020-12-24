@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import 'dotenv/config';
 
 import express, { Request, Response, NextFunction } from 'express';
+import { pagination } from 'typeorm-pagination';
 
 import cors from 'cors';
 import 'express-async-errors';
@@ -17,6 +18,7 @@ const app = express();
 
 app.use(express.json());
 app.use('/files', express.static(uploadConfig.uploadsFolder));
+app.use(pagination);
 app.use(
   cors({
     exposedHeaders: ['X-Total-Count', 'X-Total-Page'],

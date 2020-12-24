@@ -1,5 +1,6 @@
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
+import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 
 import Student from '../infra/typeorm/entities/Student';
 import IStudentsRepository from '../repositories/IStudentsRepository';
@@ -25,8 +26,8 @@ class DefaultUserService {
     return student;
   }
 
-  public async findAllStudents(take: number, skip: number): Promise<Student[]> {
-    const students = await this.studentsRepository.listAll(take, skip);
+  public async findAllStudents(): Promise<PaginationAwareObject> {
+    const students = await this.studentsRepository.findAllWithPagination();
     return students;
   }
 }

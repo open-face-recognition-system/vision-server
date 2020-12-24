@@ -1,16 +1,23 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import User from '@modules/users/infra/typeorm/entities/User';
+import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import IStudentsRepository from '../IStudentsRepository';
 
 class FakeStudentsRepository implements IStudentsRepository {
   private students: Student[] = [];
 
-  public async findAllWithPagination(
-    take: number,
-    skip: number,
-  ): Promise<Student[]> {
-    return this.students.slice((skip - 1) * take, skip * take);
+  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+    return {
+      data: this.students,
+      from: 1,
+      to: 2,
+      per_page: 15,
+      total: 2,
+      current_page: 1,
+      prev_page: null,
+      next_page: null,
+    };
   }
 
   public async findAll(): Promise<Student[]> {

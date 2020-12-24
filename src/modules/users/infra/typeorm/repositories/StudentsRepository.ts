@@ -1,6 +1,7 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import { getRepository, Repository } from 'typeorm';
+import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Student from '../entities/Student';
 import User from '../entities/User';
 
@@ -11,16 +12,13 @@ class StudentsRepository implements IStudentsRepository {
     this.ormRepository = getRepository(Student);
   }
 
-  public async findAllWithPagination(
-    take: number,
-    skip: number,
-  ): Promise<Student[]> {
-    const [result] = await this.ormRepository.findAndCount({
-      take,
-      skip,
-      relations: ['user'],
-    });
-    return result;
+  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+    const students = await this.ormRepository
+      .createQueryBuilder('student')
+      .innerJoinAndSelect('student.user', 'user')
+      .paginate();
+
+    return students;
   }
 
   public async findAll(): Promise<Student[]> {
