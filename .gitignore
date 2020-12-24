@@ -8,6 +8,11 @@
 .AppleDouble
 .LSOverride
 
+# venv
+venv
+recognition-files
+
+temp
 # Icon must end with two \r
 Icon
 

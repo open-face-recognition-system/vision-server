@@ -3,7 +3,8 @@ import Student from '../infra/typeorm/entities/Student';
 import User from '../infra/typeorm/entities/User';
 
 interface IStudentsRepository {
-  listAll(take: number, skip: number): Promise<Student[]>;
+  findAllWithPagination(take: number, skip: number): Promise<Student[]>;
+  findAll(): Promise<Student[]>;
   findById(id: number): Promise<Student | undefined>;
   findByUser(user: User): Promise<Student | undefined>;
   findByEnrollment(enrollment: string): Promise<Student | undefined>;

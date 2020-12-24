@@ -1,10 +1,10 @@
 {
   "type": "postgres",
-  "host": "localhost",
+  "host": "64.227.4.173",
   "port": 5432,
   "username": "postgres",
-  "password": "docker",
-  "database": "open_frs",
+  "password": "Ss202122@",
+  "database": "ofrs",
   "entities": [
     "./src/modules/**/infra/typeorm/entities/*.ts"
   ],

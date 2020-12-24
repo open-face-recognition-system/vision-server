@@ -7,6 +7,7 @@ import sessionsRouter from '@modules/users/infra/http/routes/sessions.routes';
 import profilesRouter from '@modules/users/infra/http/routes/profiles.routes';
 import photosRouter from '@modules/photos/infra/http/routes/photos.routes';
 import refreshTokensRouter from '@modules/users/infra/http/routes/refreshTokens.routes';
+import validationRouter from '@modules/validation/routes/validation.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const v1Router = Router();
@@ -16,6 +17,7 @@ v1Router.use('/teachers', teachersRouter);
 v1Router.use('/students', studentsRouter);
 v1Router.use('/sessions', sessionsRouter);
 v1Router.use('/refresh-tokens', refreshTokensRouter);
+v1Router.use('/validation', validationRouter);
 
 v1Router.use((request: Request, response: Response, next: NextFunction) => {
   ensureAuthenticated(['admin', 'student', 'teacher'], request, response, next);
