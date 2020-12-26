@@ -13,6 +13,10 @@ import IPhotosRepository from '@modules/photos/repositories/IPhotosRepository';
 import PhotosRepository from '@modules/photos/infra/typeorm/repositories/PhotosRepository';
 import IRefreshTokensRepository from '@modules/users/repositories/IRefreshTokensRepository';
 import RefreshTokensRepository from '@modules/users/infra/typeorm/repositories/RefreshTokensRepository';
+import ISemestersRepository from '@modules/semesters/repositories/ISemestersRepository';
+import SemestersRepository from '@modules/semesters/infra/typeorm/repositories/SemestersRepository';
+import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
+import SubjectsRepository from '@modules/subjects/infra/typeorm/repositories/SubjectRepository';
 
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
@@ -32,6 +36,16 @@ container.registerSingleton<ITeachersRepository>(
 container.registerSingleton<IPhotosRepository>(
   'PhotosRepository',
   PhotosRepository,
+);
+
+container.registerSingleton<ISemestersRepository>(
+  'SemestersRepository',
+  SemestersRepository,
+);
+
+container.registerSingleton<ISubjectsRepository>(
+  'SubjectsRepository',
+  SubjectsRepository,
 );
 
 container.registerSingleton<IRefreshTokensRepository>(
