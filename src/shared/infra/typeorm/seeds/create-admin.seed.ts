@@ -14,7 +14,7 @@ export default class CreateAdmin implements Seeder {
           name: 'Admin',
           email: 'admin@admin.com',
           password:
-            "'$2a$08$GFF5JPtqxxDV7O541tew0uwayAxGTFFpchFSYDuuKA47ZWma9CtNe'",
+            '$2a$08$GFF5JPtqxxDV7O541tew0uwayAxGTFFpchFSYDuuKA47ZWma9CtNe',
           role: Role.ADMIN,
         },
       ])
