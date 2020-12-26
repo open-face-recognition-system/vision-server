@@ -22,17 +22,17 @@ v1Router.use('/refresh-tokens', refreshTokensRouter);
 v1Router.use('/validation', validationRouter);
 
 v1Router.use((request: Request, response: Response, next: NextFunction) => {
-  ensureAuthenticated(['admin'], request, response, next);
-});
-
-v1Router.use('/semesters', semestersRouter);
-v1Router.use('/subjects', subjectsRouter);
-
-v1Router.use((request: Request, response: Response, next: NextFunction) => {
   ensureAuthenticated(['admin', 'student', 'teacher'], request, response, next);
 });
 
 v1Router.use('/profiles', profilesRouter);
 v1Router.use('/photos', photosRouter);
+
+v1Router.use((request: Request, response: Response, next: NextFunction) => {
+  ensureAuthenticated(['admin'], request, response, next);
+});
+
+v1Router.use('/semesters', semestersRouter);
+v1Router.use('/subjects', subjectsRouter);
 
 export default v1Router;
