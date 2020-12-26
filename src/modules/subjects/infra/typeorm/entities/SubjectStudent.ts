@@ -8,9 +8,10 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import Subject from './Subject';
 
 @Entity('subject_students')
-class Subject {
+class SubjectStudent {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -32,4 +33,4 @@ class Subject {
   updatedAt: Date;
 }
 
-export default Subject;
+export default SubjectStudent;

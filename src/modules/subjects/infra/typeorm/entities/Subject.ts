@@ -8,7 +8,9 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
+import SubjectStudent from './SubjectStudent';
 
 @Entity('subjects')
 class Subject {
@@ -31,6 +33,9 @@ class Subject {
   @ManyToOne(() => RecognitionFile)
   @JoinColumn({ name: 'recognition_file_id' })
   recognitionFile: RecognitionFile;
+
+  @OneToMany(() => SubjectStudent, subjectStudent => subjectStudent.subject)
+  students: SubjectStudent[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -8,6 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
+import Semester from './Semester';
 
 @Entity('classes')
 class Class {
@@ -26,6 +27,10 @@ class Class {
   @ManyToOne(() => Subject)
   @JoinColumn({ name: 'subject_id' })
   subject: Subject;
+
+  @ManyToOne(() => Semester)
+  @JoinColumn({ name: 'semester_id' })
+  semester: Semester;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

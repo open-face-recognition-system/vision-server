@@ -1,10 +1,12 @@
+import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
 import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Subject from '../infra/typeorm/entities/Subject';
-
+import SubjectStudent from '../infra/typeorm/entities/SubjectStudent';
 import ISubjectsRepository from '../repositories/ISubjectsRepository';
+import ISubjectsStudentsRepository from '../repositories/ISubjectsStudentsRepository';
 
 interface IRequest {
   name: string;
@@ -17,15 +19,25 @@ interface IRequest {
 class SubjectsService {
   private subjectsRepository: ISubjectsRepository;
 
+  private studentsRepository: IStudentsRepository;
+
+  private subjectsStudentsRepository: ISubjectsStudentsRepository;
+
   private teachersRepository: ITeachersRepository;
 
   constructor(
     @inject('SubjectsRepository')
     subjectsRepository: ISubjectsRepository,
+    @inject('StudentsRepository')
+    studentsRepository: IStudentsRepository,
+    @inject('SubjectsStudentsRepository')
+    subjectsStudentsRepository: ISubjectsStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
   ) {
     this.subjectsRepository = subjectsRepository;
+    this.studentsRepository = studentsRepository;
+    this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.teachersRepository = teachersRepository;
   }
 
@@ -88,6 +100,50 @@ class SubjectsService {
 
   public async deleteDemester(id: number): Promise<void> {
     await this.subjectsRepository.delete(id);
+  }
+
+  public async enrollStudent(
+    subjectId: number,
+    studentId: number,
+  ): Promise<SubjectStudent> {
+    const subject = await this.subjectsRepository.findById(subjectId);
+
+    if (!subject) {
+      throw new AppError('Subject does not exists');
+    }
+
+    const student = await this.studentsRepository.findById(studentId);
+
+    if (!student) {
+      throw new AppError('Student does not exists');
+    }
+
+    const subjectStudent = await this.subjectsStudentsRepository.save({
+      isEnrolled: true,
+      subject,
+      student,
+    });
+
+    return subjectStudent;
+  }
+
+  public async unenrollStudent(
+    subjectId: number,
+    studentId: number,
+  ): Promise<void> {
+    const subject = await this.subjectsRepository.findById(subjectId);
+
+    if (!subject) {
+      throw new AppError('Subject does not exists');
+    }
+
+    const student = await this.studentsRepository.findById(studentId);
+
+    if (!student) {
+      throw new AppError('Student does not exists');
+    }
+
+    await this.subjectsStudentsRepository.deleteByStudent(student);
   }
 }
 

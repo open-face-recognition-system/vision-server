@@ -17,6 +17,8 @@ import ISemestersRepository from '@modules/semesters/repositories/ISemestersRepo
 import SemestersRepository from '@modules/semesters/infra/typeorm/repositories/SemestersRepository';
 import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
 import SubjectsRepository from '@modules/subjects/infra/typeorm/repositories/SubjectRepository';
+import ISubjectsStudentsRepository from '@modules/subjects/repositories/ISubjectsStudentsRepository';
+import SubjectsStudentsRepository from '@modules/subjects/infra/typeorm/repositories/SubjectsStudentsRepository';
 
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
@@ -46,6 +48,11 @@ container.registerSingleton<ISemestersRepository>(
 container.registerSingleton<ISubjectsRepository>(
   'SubjectsRepository',
   SubjectsRepository,
+);
+
+container.registerSingleton<ISubjectsStudentsRepository>(
+  'SubjectsStudentsRepository',
+  SubjectsStudentsRepository,
 );
 
 container.registerSingleton<IRefreshTokensRepository>(
