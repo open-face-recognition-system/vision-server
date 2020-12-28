@@ -48,7 +48,7 @@ class SemestersController {
     const { id } = request.params;
 
     const semestersService = container.resolve(SemestersService);
-    await semestersService.deleteDemester(Number(id));
+    await semestersService.deleteSemester(Number(id));
 
     return response.status(204).json();
   }

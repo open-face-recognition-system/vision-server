@@ -55,7 +55,7 @@ class SemestersService {
     return semester;
   }
 
-  public async deleteDemester(id: number): Promise<void> {
+  public async deleteSemester(id: number): Promise<void> {
     await this.semestersRepository.delete(id);
   }
 }

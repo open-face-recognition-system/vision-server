@@ -24,7 +24,7 @@ class Recognition {
         const pythonProcess = spawn('python', [
           './src/modules/validation/python/eigenfaces.py',
           newFilePath,
-          '10',
+          '25',
         ]);
 
         pythonProcess.stdout.on('data', async data => {
@@ -33,7 +33,7 @@ class Recognition {
           const confidence = Number(conf);
           const findPhoto = student?.photos.find(photo => photo.path === file);
           console.log(
-            `${student?.user.name} | ${confidence}% | ${findPhoto?.path}`,
+            `${student?.user.name} | ${confidence}% | ${findPhoto?.path} | ${file}`,
           );
         });
       });
