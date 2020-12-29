@@ -2,8 +2,8 @@ import IStudentsRepository from '@modules/users/repositories/IStudentsRepository
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
 import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
-import Attendence from '../infra/typeorm/entities/Attendence';
-import IAttendencesRepository from '../repositories/IAttendencesRepository';
+import Attendance from '../infra/typeorm/entities/Attendance';
+import IAttendancesRepository from '../repositories/IAttendancesRepository';
 import IClassesRepository from '../repositories/IClassesRepository';
 
 interface IRequest {
@@ -13,46 +13,46 @@ interface IRequest {
 }
 
 @injectable()
-class AttendencesService {
-  private attendencesRepository: IAttendencesRepository;
+class AttendancesService {
+  private attendancesRepository: IAttendancesRepository;
 
   private studentsRepository: IStudentsRepository;
 
   private classesRepository: IClassesRepository;
 
   constructor(
-    @inject('AttendencesRepository')
-    attendencesRepository: IAttendencesRepository,
+    @inject('AttendancesRepository')
+    attendancesRepository: IAttendancesRepository,
     @inject('StudentsRepository')
     studentsRepository: IStudentsRepository,
     @inject('ClassesRepository')
     classesRepository: IClassesRepository,
   ) {
-    this.attendencesRepository = attendencesRepository;
+    this.attendancesRepository = attendancesRepository;
     this.studentsRepository = studentsRepository;
     this.classesRepository = classesRepository;
   }
 
-  public async listAttendences(): Promise<PaginationAwareObject> {
-    const semesters = await this.attendencesRepository.findAllWithPagination();
+  public async listAttendances(): Promise<PaginationAwareObject> {
+    const semesters = await this.attendancesRepository.findAllWithPagination();
     return semesters;
   }
 
-  public async showAttendence(id: number): Promise<Attendence | undefined> {
-    const attendence = await this.attendencesRepository.findById(id);
+  public async showAttendance(id: number): Promise<Attendance | undefined> {
+    const attendance = await this.attendancesRepository.findById(id);
 
-    if (!attendence) {
-      throw new AppError('Attendence does not exists');
+    if (!attendance) {
+      throw new AppError('Attendance does not exists');
     }
 
-    return attendence;
+    return attendance;
   }
 
-  public async createAttendence({
+  public async createAttendance({
     isPresent,
     classId,
     studentId,
-  }: IRequest): Promise<Attendence> {
+  }: IRequest): Promise<Attendance> {
     const findClass = await this.classesRepository.findById(classId);
 
     if (!findClass) {
@@ -65,18 +65,18 @@ class AttendencesService {
       throw new AppError('Student does not exists');
     }
 
-    const attendence = await this.attendencesRepository.create({
+    const attendance = await this.attendancesRepository.create({
       isPresent,
       class: findClass,
       student,
     });
-    return attendence;
+    return attendance;
   }
 
-  public async updateAttendence(
+  public async updateAttendance(
     id: number,
     { isPresent, classId, studentId }: IRequest,
-  ): Promise<Attendence> {
+  ): Promise<Attendance> {
     const findClass = await this.classesRepository.findById(classId);
 
     if (!findClass) {
@@ -89,18 +89,18 @@ class AttendencesService {
       throw new AppError('Student does not exists');
     }
 
-    const attendence = await this.attendencesRepository.save({
+    const attendance = await this.attendancesRepository.save({
       id,
       isPresent,
       class: findClass,
       student,
     });
-    return attendence;
+    return attendance;
   }
 
-  public async deleteAttendence(id: number): Promise<void> {
-    await this.attendencesRepository.delete(id);
+  public async deleteAttendance(id: number): Promise<void> {
+    await this.attendancesRepository.delete(id);
   }
 }
 
-export default AttendencesService;
+export default AttendancesService;

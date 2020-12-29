@@ -10,6 +10,8 @@ import refreshTokensRouter from '@modules/users/infra/http/routes/refreshTokens.
 import validationRouter from '@modules/validation/routes/validation.routes';
 import semestersRouter from '@modules/semesters/infra/http/routes/semesters.routes';
 import subjectsRouter from '@modules/subjects/infra/http/routes/subjects.routes';
+import classesRouter from '@modules/semesters/infra/http/routes/classes.routes';
+import attendancesRouter from '@modules/semesters/infra/http/routes/attendances.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const v1Router = Router();
@@ -34,5 +36,7 @@ v1Router.use((request: Request, response: Response, next: NextFunction) => {
 
 v1Router.use('/semesters', semestersRouter);
 v1Router.use('/subjects', subjectsRouter);
+v1Router.use('/classes', classesRouter);
+v1Router.use('/attendances', attendancesRouter);
 
 export default v1Router;

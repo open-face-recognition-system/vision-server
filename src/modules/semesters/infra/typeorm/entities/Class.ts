@@ -15,10 +15,10 @@ class Class {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'start_hour' })
   startHour: Date;
 
-  @Column()
+  @Column({ name: 'end_hour' })
   endHour: Date;
 
   @Column()

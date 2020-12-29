@@ -19,6 +19,10 @@ import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsReposit
 import SubjectsRepository from '@modules/subjects/infra/typeorm/repositories/SubjectRepository';
 import ISubjectsStudentsRepository from '@modules/subjects/repositories/ISubjectsStudentsRepository';
 import SubjectsStudentsRepository from '@modules/subjects/infra/typeorm/repositories/SubjectsStudentsRepository';
+import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
+import ClassesRepository from '@modules/semesters/infra/typeorm/repositories/ClassesRepository';
+import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
+import AttendancesRepository from '@modules/semesters/infra/typeorm/repositories/AttendancesRepository';
 
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
@@ -53,6 +57,16 @@ container.registerSingleton<ISubjectsRepository>(
 container.registerSingleton<ISubjectsStudentsRepository>(
   'SubjectsStudentsRepository',
   SubjectsStudentsRepository,
+);
+
+container.registerSingleton<IClassesRepository>(
+  'ClassesRepository',
+  ClassesRepository,
+);
+
+container.registerSingleton<IAttendancesRepository>(
+  'AttendancesRepository',
+  AttendancesRepository,
 );
 
 container.registerSingleton<IRefreshTokensRepository>(

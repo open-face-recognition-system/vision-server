@@ -15,6 +15,9 @@ class SubjectsRepository implements ISubjectsRepository {
   public async findAllWithPagination(): Promise<PaginationAwareObject> {
     const semesters = await this.ormRepository
       .createQueryBuilder('subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .leftJoinAndSelect('subject.recognitionFile', 'recognitionFile')
       .paginate();
 
     return semesters;
@@ -23,6 +26,14 @@ class SubjectsRepository implements ISubjectsRepository {
   public async findById(id: number): Promise<Subject | undefined> {
     const semester = await this.ormRepository.findOne({
       where: { id },
+      relations: [
+        'teacher',
+        'teacher.user',
+        'students',
+        'recognitionFile',
+        'students.student',
+        'students.student.user',
+      ],
     });
     return semester;
   }
