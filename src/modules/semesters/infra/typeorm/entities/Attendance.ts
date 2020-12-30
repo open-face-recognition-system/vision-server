@@ -10,12 +10,12 @@ import {
 } from 'typeorm';
 import Class from './Class';
 
-@Entity('attendence_items')
+@Entity('attendences')
 class Attendance {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'is_present' })
   isPresent: boolean;
 
   @ManyToOne(() => Class)

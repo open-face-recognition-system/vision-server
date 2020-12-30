@@ -5,7 +5,7 @@ export default class CreateAttendenceItems1604017380691
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'attendences',
+        name: 'attendances',
         columns: [
           {
             name: 'id',
@@ -59,6 +59,6 @@ export default class CreateAttendenceItems1604017380691
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('attendences');
+    await queryRunner.dropTable('attendances');
   }
 }
