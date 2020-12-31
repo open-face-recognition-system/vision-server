@@ -5,9 +5,15 @@ import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/paginatio
 import IStudentsRepository from '../IStudentsRepository';
 
 class FakeStudentsRepository implements IStudentsRepository {
+  findAllWithPaginationByName(name: string): Promise<PaginationAwareObject> {
+    throw new Error(`Method not implemented. ${name}`);
+  }
+
   private students: Student[] = [];
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+  public async findAllWithPagination(
+    query: any,
+  ): Promise<PaginationAwareObject> {
     return {
       data: this.students,
       from: 1,
@@ -16,7 +22,7 @@ class FakeStudentsRepository implements IStudentsRepository {
       total: 2,
       current_page: 1,
       prev_page: null,
-      next_page: null,
+      next_page: query,
     };
   }
 

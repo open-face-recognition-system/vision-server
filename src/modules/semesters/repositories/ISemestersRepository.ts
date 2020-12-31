@@ -4,7 +4,7 @@ import ISaveSemesterDTO from '../dtos/ISaveSemesterDTO';
 import Semester from '../infra/typeorm/entities/Semester';
 
 interface ISemestersRepository {
-  findAllWithPagination(): Promise<PaginationAwareObject>;
+  findAllWithPagination(query: any): Promise<PaginationAwareObject>;
   findById(id: number): Promise<Semester | undefined>;
   create(semester: ICreateSemesterDTO): Promise<Semester>;
   delete(id: number): Promise<void>;

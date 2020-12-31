@@ -4,7 +4,7 @@ import ISaveAttendanceDTO from '../dtos/ISaveAttendanceDTO';
 import Attendance from '../infra/typeorm/entities/Attendance';
 
 interface IAttendancesRepository {
-  findAllWithPagination(): Promise<PaginationAwareObject>;
+  findAllWithPagination(query: any): Promise<PaginationAwareObject>;
   findById(id: number): Promise<Attendance | undefined>;
   create(attendance: ICreateAttendanceDTO): Promise<Attendance>;
   delete(id: number): Promise<void>;

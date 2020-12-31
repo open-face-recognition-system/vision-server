@@ -33,8 +33,10 @@ class AttendancesService {
     this.classesRepository = classesRepository;
   }
 
-  public async listAttendances(): Promise<PaginationAwareObject> {
-    const semesters = await this.attendancesRepository.findAllWithPagination();
+  public async listAttendances(query: any): Promise<PaginationAwareObject> {
+    const semesters = await this.attendancesRepository.findAllWithPagination(
+      query,
+    );
     return semesters;
   }
 

@@ -5,7 +5,7 @@ import ISaveClassDTO from '../dtos/ISaveClassDTO';
 import Class from '../infra/typeorm/entities/Class';
 
 interface IClassesRepository {
-  findAllWithPagination(): Promise<PaginationAwareObject>;
+  findAllWithPagination(query: any): Promise<PaginationAwareObject>;
   findById(id: number): Promise<Class | undefined>;
   create(createClass: ICreateClassDTO): Promise<Class>;
   delete(id: number): Promise<void>;

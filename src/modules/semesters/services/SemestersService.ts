@@ -17,8 +17,10 @@ class SemestersService {
     this.semestersRepository = semestersRepository;
   }
 
-  public async listSemesters(): Promise<PaginationAwareObject> {
-    const semesters = await this.semestersRepository.findAllWithPagination();
+  public async listSemesters(query: any): Promise<PaginationAwareObject> {
+    const semesters = await this.semestersRepository.findAllWithPagination(
+      query,
+    );
     return semesters;
   }
 

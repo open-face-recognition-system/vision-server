@@ -12,9 +12,12 @@ class AttendancesRepository implements IAttendancesRepository {
     this.ormRepository = getRepository(Attendance);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+  public async findAllWithPagination(
+    query: any,
+  ): Promise<PaginationAwareObject> {
     const classes = await this.ormRepository
       .createQueryBuilder('attendances')
+      .where(query.where)
       .paginate();
 
     return classes;

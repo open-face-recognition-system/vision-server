@@ -49,8 +49,16 @@ class DefaultUserService {
     return teacher;
   }
 
-  public async findAllStudents(): Promise<PaginationAwareObject> {
-    const students = await this.studentsRepository.findAllWithPagination();
+  public async findAllStudents(query: any): Promise<PaginationAwareObject> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    let students = {} as PaginationAwareObject;
+    if (query.name) {
+      students = await this.studentsRepository.findAllWithPaginationByName(
+        query.name,
+      );
+    } else {
+      students = await this.studentsRepository.findAllWithPagination(built);
+    }
     return students;
   }
 

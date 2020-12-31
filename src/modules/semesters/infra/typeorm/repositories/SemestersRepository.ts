@@ -12,9 +12,12 @@ class SemestersRepository implements ISemestersRepository {
     this.ormRepository = getRepository(Semester);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+  public async findAllWithPagination(
+    query: any,
+  ): Promise<PaginationAwareObject> {
     const semesters = await this.ormRepository
       .createQueryBuilder('semester')
+      .where(query.where)
       .paginate();
 
     return semesters;

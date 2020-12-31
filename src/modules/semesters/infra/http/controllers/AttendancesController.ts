@@ -6,7 +6,7 @@ import { container } from 'tsyringe';
 class AttendancesController {
   public async list(request: Request, response: Response): Promise<Response> {
     const attendancesService = container.resolve(AttendancesService);
-    const attendances = await attendancesService.listAttendances();
+    const attendances = await attendancesService.listAttendances(request.query);
     return response.json(classToClass(attendances));
   }
 

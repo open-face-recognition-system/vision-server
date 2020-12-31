@@ -35,8 +35,8 @@ class ClassesService {
     this.semestersRepository = semestersRepository;
   }
 
-  public async listClasses(): Promise<PaginationAwareObject> {
-    const classes = await this.classesRepository.findAllWithPagination();
+  public async listClasses(query: any): Promise<PaginationAwareObject> {
+    const classes = await this.classesRepository.findAllWithPagination(query);
     return classes;
   }
 

@@ -12,9 +12,12 @@ class ClassesRepository implements IClassesRepository {
     this.ormRepository = getRepository(Class);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+  public async findAllWithPagination(
+    query: any,
+  ): Promise<PaginationAwareObject> {
     const classes = await this.ormRepository
       .createQueryBuilder('classes')
+      .where(query.where)
       .paginate();
 
     return classes;
