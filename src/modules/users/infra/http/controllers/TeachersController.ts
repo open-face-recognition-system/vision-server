@@ -7,7 +7,7 @@ import DefaultUserService from '@modules/users/services/DefaultUserService';
 class TeachersController {
   public async list(request: Request, response: Response): Promise<Response> {
     const defaultUserService = container.resolve(DefaultUserService);
-    const teachers = await defaultUserService.findAllTeachers();
+    const teachers = await defaultUserService.findAllTeachers(request.query);
 
     return response.json(classToClass(teachers));
   }

@@ -5,14 +5,18 @@ import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/paginatio
 import ITeachersRepository from '../ITeachersRepository';
 
 class FakeTeachersRepository implements ITeachersRepository {
-  findAllWithPagination(): Promise<PaginationAwareObject> {
-    throw new Error('Method not implemented.');
+  findAllWithPaginationByName(name: string): Promise<PaginationAwareObject> {
+    throw new Error(`Method not implemented. ${name}`);
+  }
+
+  findAllWithPagination(query: any): Promise<PaginationAwareObject> {
+    throw new Error(`Method not implemented. ${query}`);
   }
 
   private teachers: Teacher[] = [];
 
-  public async listAll(): Promise<Teacher[]> {
-    return this.teachers;
+  public async listAll(query: any): Promise<Teacher[]> {
+    throw new Error(`Method not implemented. ${query}`);
   }
 
   public async findById(id: number): Promise<Teacher | undefined> {

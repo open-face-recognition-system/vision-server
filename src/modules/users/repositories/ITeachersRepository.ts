@@ -4,8 +4,9 @@ import Teacher from '../infra/typeorm/entities/Teacher';
 import User from '../infra/typeorm/entities/User';
 
 export default interface ITeachersRepository {
-  findAllWithPagination(): Promise<PaginationAwareObject>;
-  listAll(): Promise<Teacher[]>;
+  findAllWithPagination(query: any): Promise<PaginationAwareObject>;
+  findAllWithPaginationByName(name: string): Promise<PaginationAwareObject>;
+  listAll(query: any): Promise<Teacher[]>;
   findById(id: number): Promise<Teacher | undefined>;
   findByUser(user: User): Promise<Teacher | undefined>;
   findByEnrollment(enrollment: string): Promise<Teacher | undefined>;

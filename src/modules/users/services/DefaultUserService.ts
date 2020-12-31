@@ -1,3 +1,4 @@
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
 import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
@@ -13,14 +14,19 @@ class DefaultUserService {
 
   private teachersRepository: ITeachersRepository;
 
+  private queryBuilderProvider: IQueryBuilderProvider;
+
   constructor(
     @inject('StudentsRepository')
     studentsRepository: IStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.studentsRepository = studentsRepository;
     this.teachersRepository = teachersRepository;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
   public async findStudentById(studentId: number): Promise<Student> {
@@ -48,8 +54,16 @@ class DefaultUserService {
     return students;
   }
 
-  public async findAllTeachers(): Promise<PaginationAwareObject> {
-    const teachers = await this.teachersRepository.findAllWithPagination();
+  public async findAllTeachers(query: any): Promise<PaginationAwareObject> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    let teachers = {} as PaginationAwareObject;
+    if (query.name) {
+      teachers = await this.teachersRepository.findAllWithPaginationByName(
+        query.name,
+      );
+    } else {
+      teachers = await this.teachersRepository.findAllWithPagination(built);
+    }
     return teachers;
   }
 }

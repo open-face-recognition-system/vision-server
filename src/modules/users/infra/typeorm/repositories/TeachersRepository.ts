@@ -12,22 +12,38 @@ class TeachersRepository implements ITeachersRepository {
     this.ormRepository = getRepository(Teacher);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
-    const students = await this.ormRepository
+  public async findAllWithPagination(
+    query: any,
+  ): Promise<PaginationAwareObject> {
+    const teachers = await this.ormRepository
       .createQueryBuilder('teacher')
       .innerJoinAndSelect('teacher.user', 'user')
+      .where(query.where)
       .paginate();
-
-    return students;
+    return teachers;
   }
 
-  public async listAll(): Promise<Teacher[]> {
-    const teachers = await this.ormRepository.find();
+  public async findAllWithPaginationByName(
+    name: string,
+  ): Promise<PaginationAwareObject> {
+    const teachers = await this.ormRepository
+      .createQueryBuilder('teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .where('user.name ILIKE :name', { name: `%${name}%` })
+      .paginate();
+    return teachers;
+  }
+
+  public async listAll(query: any): Promise<Teacher[]> {
+    const teachers = await this.ormRepository.find(query);
     return teachers;
   }
 
   public async findById(id: number): Promise<Teacher | undefined> {
-    const teacher = await this.ormRepository.findOne(id);
+    const teacher = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     return teacher;
   }
 

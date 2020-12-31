@@ -40,6 +40,7 @@
     "ts-node": "^9.0.0",
     "tsyringe": "^4.3.0",
     "typeorm": "^0.2.25",
+    "typeorm-express-query-builder": "^1.2.0",
     "typeorm-pagination": "^2.0.1",
     "typeorm-seeding": "^1.6.1",
     "uuidv4": "^6.2.4",
