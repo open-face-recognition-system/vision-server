@@ -1,6 +1,7 @@
 import ICreateTeacherDTO from '@modules/users/dtos/ICreateTeacherDTO';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
 import { getRepository, Repository } from 'typeorm';
+import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Teacher from '../entities/Teacher';
 import User from '../entities/User';
 
@@ -9,6 +10,15 @@ class TeachersRepository implements ITeachersRepository {
 
   constructor() {
     this.ormRepository = getRepository(Teacher);
+  }
+
+  public async findAllWithPagination(): Promise<PaginationAwareObject> {
+    const students = await this.ormRepository
+      .createQueryBuilder('teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .paginate();
+
+    return students;
   }
 
   public async listAll(): Promise<Teacher[]> {

@@ -7,6 +7,8 @@ import TeachersController from '../controllers/TeachersController';
 const teachersRouter = Router();
 const teachersController = new TeachersController();
 
+teachersRouter.get('/', teachersController.list);
+teachersRouter.get('/:id', teachersController.show);
 teachersRouter.post(
   '/',
   celebrate({

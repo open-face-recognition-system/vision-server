@@ -1,9 +1,14 @@
 import ICreateTeacherDTO from '@modules/users/dtos/ICreateTeacherDTO';
 import Teacher from '@modules/users/infra/typeorm/entities/Teacher';
 import User from '@modules/users/infra/typeorm/entities/User';
+import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import ITeachersRepository from '../ITeachersRepository';
 
 class FakeTeachersRepository implements ITeachersRepository {
+  findAllWithPagination(): Promise<PaginationAwareObject> {
+    throw new Error('Method not implemented.');
+  }
+
   private teachers: Teacher[] = [];
 
   public async listAll(): Promise<Teacher[]> {
