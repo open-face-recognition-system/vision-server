@@ -22,6 +22,7 @@
   "rules": {
     "no-underscore-dangle": "off",
     "no-param-reassign": "off",
+    "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "prettier/prettier": "error",
     "class-methods-use-this": "off",

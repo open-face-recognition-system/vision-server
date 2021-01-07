@@ -1,10 +1,11 @@
+import Student from '@modules/users/infra/typeorm/entities/Student';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Subject from '../infra/typeorm/entities/Subject';
-import SubjectStudent from '../infra/typeorm/entities/SubjectStudent';
 import ISubjectsRepository from '../repositories/ISubjectsRepository';
 import ISubjectsStudentsRepository from '../repositories/ISubjectsStudentsRepository';
 
@@ -25,6 +26,8 @@ class SubjectsService {
 
   private teachersRepository: ITeachersRepository;
 
+  private queryBuilderProvider: IQueryBuilderProvider;
+
   constructor(
     @inject('SubjectsRepository')
     subjectsRepository: ISubjectsRepository,
@@ -34,15 +37,19 @@ class SubjectsService {
     subjectsStudentsRepository: ISubjectsStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.subjectsRepository = subjectsRepository;
     this.studentsRepository = studentsRepository;
     this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.teachersRepository = teachersRepository;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
-  public async listSubjects(): Promise<PaginationAwareObject> {
-    const subjects = await this.subjectsRepository.findAllWithPagination();
+  public async listSubjects(query: any): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    const subjects = await this.subjectsRepository.findAllWithPagination(built);
     return subjects;
   }
 
@@ -105,7 +112,7 @@ class SubjectsService {
   public async enrollStudent(
     subjectId: number,
     studentId: number,
-  ): Promise<SubjectStudent> {
+  ): Promise<Student> {
     const subject = await this.subjectsRepository.findById(subjectId);
 
     if (!subject) {
@@ -118,13 +125,26 @@ class SubjectsService {
       throw new AppError('Student does not exists');
     }
 
-    const subjectStudent = await this.subjectsStudentsRepository.save({
-      isEnrolled: true,
-      subject,
+    const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
       student,
-    });
+    );
 
-    return subjectStudent;
+    if (studentAlreadyEnrolled) {
+      await this.subjectsStudentsRepository.save({
+        id: studentAlreadyEnrolled.id,
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    } else {
+      await this.subjectsStudentsRepository.create({
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    }
+
+    return student;
   }
 
   public async unenrollStudent(
@@ -143,7 +163,20 @@ class SubjectsService {
       throw new AppError('Student does not exists');
     }
 
-    await this.subjectsStudentsRepository.deleteByStudent(student);
+    const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
+      student,
+    );
+
+    if (!studentAlreadyEnrolled) {
+      throw new AppError('Student does not enrolled on this subject');
+    }
+
+    await this.subjectsStudentsRepository.save({
+      id: studentAlreadyEnrolled.id,
+      isEnrolled: false,
+      subject,
+      student,
+    });
   }
 }
 

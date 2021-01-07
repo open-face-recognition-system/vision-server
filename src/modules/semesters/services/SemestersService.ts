@@ -1,6 +1,7 @@
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import ICreateSemesterDTO from '../dtos/ICreateSemesterDTO';
 import Semester from '../infra/typeorm/entities/Semester';
 
@@ -10,16 +11,22 @@ import ISemestersRepository from '../repositories/ISemestersRepository';
 class SemestersService {
   private semestersRepository: ISemestersRepository;
 
+  private queryBuilderProvider: IQueryBuilderProvider;
+
   constructor(
     @inject('SemestersRepository')
     semestersRepository: ISemestersRepository,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.semestersRepository = semestersRepository;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
-  public async listSemesters(query: any): Promise<PaginationAwareObject> {
+  public async listSemesters(query: any): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
     const semesters = await this.semestersRepository.findAllWithPagination(
-      query,
+      built,
     );
     return semesters;
   }

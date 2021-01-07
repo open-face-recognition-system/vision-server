@@ -1,7 +1,7 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
+import Pagination from '@shared/dtos/Pagination';
 import Student from '../entities/Student';
 import User from '../entities/User';
 
@@ -12,28 +12,17 @@ class StudentsRepository implements IStudentsRepository {
     this.ormRepository = getRepository(Student);
   }
 
-  public async findAllWithPagination(
-    query: any,
-  ): Promise<PaginationAwareObject> {
-    const students = await this.ormRepository
-      .createQueryBuilder('student')
-      .innerJoinAndSelect('student.user', 'user')
-      .where(query.where)
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const students = await this.ormRepository.find({
+      ...query,
+      relations: ['user'],
+    });
 
-    return students;
-  }
-
-  public async findAllWithPaginationByName(
-    name: string,
-  ): Promise<PaginationAwareObject> {
-    const students = await this.ormRepository
-      .createQueryBuilder('student')
-      .innerJoinAndSelect('student.user', 'user')
-      .where('user.name ILIKE :name', { name: `%${name}%` })
-      .paginate();
-
-    return students;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: students || [],
+    };
   }
 
   public async findAll(): Promise<Student[]> {

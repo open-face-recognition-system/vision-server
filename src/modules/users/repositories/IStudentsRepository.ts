@@ -1,11 +1,10 @@
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
+import Pagination from '@shared/dtos/Pagination';
 import ICreateStudentDTO from '../dtos/ICreateStudentDTO';
 import Student from '../infra/typeorm/entities/Student';
 import User from '../infra/typeorm/entities/User';
 
 interface IStudentsRepository {
-  findAllWithPagination(query: any): Promise<PaginationAwareObject>;
-  findAllWithPaginationByName(name: string): Promise<PaginationAwareObject>;
+  findAllWithPagination(query: any): Promise<Pagination>;
   findAll(): Promise<Student[]>;
   findById(id: number): Promise<Student | undefined>;
   findByUser(user: User): Promise<Student | undefined>;

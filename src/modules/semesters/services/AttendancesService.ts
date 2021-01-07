@@ -1,7 +1,8 @@
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Attendance from '../infra/typeorm/entities/Attendance';
 import IAttendancesRepository from '../repositories/IAttendancesRepository';
 import IClassesRepository from '../repositories/IClassesRepository';
@@ -20,6 +21,8 @@ class AttendancesService {
 
   private classesRepository: IClassesRepository;
 
+  private queryBuilderProvider: IQueryBuilderProvider;
+
   constructor(
     @inject('AttendancesRepository')
     attendancesRepository: IAttendancesRepository,
@@ -27,15 +30,19 @@ class AttendancesService {
     studentsRepository: IStudentsRepository,
     @inject('ClassesRepository')
     classesRepository: IClassesRepository,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.attendancesRepository = attendancesRepository;
     this.studentsRepository = studentsRepository;
     this.classesRepository = classesRepository;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
-  public async listAttendances(query: any): Promise<PaginationAwareObject> {
+  public async listAttendances(query: any): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
     const semesters = await this.attendancesRepository.findAllWithPagination(
-      query,
+      built,
     );
     return semesters;
   }

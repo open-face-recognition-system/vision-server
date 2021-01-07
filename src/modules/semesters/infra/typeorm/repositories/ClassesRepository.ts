@@ -1,8 +1,8 @@
 import ICreateClassDTO from '@modules/semesters/dtos/ICreateClassDTO';
 import ISaveClassDTO from '@modules/semesters/dtos/ISaveClassDTO';
 import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Class from '../entities/Class';
 
 class ClassesRepository implements IClassesRepository {
@@ -12,20 +12,29 @@ class ClassesRepository implements IClassesRepository {
     this.ormRepository = getRepository(Class);
   }
 
-  public async findAllWithPagination(
-    query: any,
-  ): Promise<PaginationAwareObject> {
-    const classes = await this.ormRepository
-      .createQueryBuilder('classes')
-      .where(query.where)
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const classes = await this.ormRepository.find({
+      ...query,
+      relations: ['subject', 'semester'],
+    });
 
-    return classes;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: classes || [],
+    };
   }
 
   public async findById(id: number): Promise<Class | undefined> {
     const findClass = await this.ormRepository.findOne({
       where: { id },
+      relations: [
+        'subject',
+        'semester',
+        'attendances',
+        'attendances.student',
+        'attendances.student.user',
+      ],
     });
     return findClass;
   }

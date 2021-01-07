@@ -1,7 +1,7 @@
 import ICreateTeacherDTO from '@modules/users/dtos/ICreateTeacherDTO';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Teacher from '../entities/Teacher';
 import User from '../entities/User';
 
@@ -12,20 +12,20 @@ class TeachersRepository implements ITeachersRepository {
     this.ormRepository = getRepository(Teacher);
   }
 
-  public async findAllWithPagination(
-    query: any,
-  ): Promise<PaginationAwareObject> {
-    const teachers = await this.ormRepository
-      .createQueryBuilder('teacher')
-      .innerJoinAndSelect('teacher.user', 'user')
-      .where(query.where)
-      .paginate();
-    return teachers;
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const teachers = await this.ormRepository.find({
+      ...query,
+      relations: ['user'],
+    });
+
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: teachers || [],
+    };
   }
 
-  public async findAllWithPaginationByName(
-    name: string,
-  ): Promise<PaginationAwareObject> {
+  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
     const teachers = await this.ormRepository
       .createQueryBuilder('teacher')
       .innerJoinAndSelect('teacher.user', 'user')

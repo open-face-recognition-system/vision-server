@@ -1,8 +1,8 @@
 import ICreateAttendanceDTO from '@modules/semesters/dtos/ICreateAttendanceDTO';
 import ISaveAttendanceDTO from '@modules/semesters/dtos/ISaveAttendanceDTO';
 import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Attendance from '../entities/Attendance';
 
 class AttendancesRepository implements IAttendancesRepository {
@@ -12,20 +12,20 @@ class AttendancesRepository implements IAttendancesRepository {
     this.ormRepository = getRepository(Attendance);
   }
 
-  public async findAllWithPagination(
-    query: any,
-  ): Promise<PaginationAwareObject> {
-    const classes = await this.ormRepository
-      .createQueryBuilder('attendances')
-      .where(query.where)
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const attendances = await this.ormRepository.find(query);
 
-    return classes;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: attendances || [],
+    };
   }
 
   public async findById(id: number): Promise<Attendance | undefined> {
     const attendance = await this.ormRepository.findOne({
       where: { id },
+      relations: ['class', 'student', 'student.user'],
     });
     return attendance;
   }
