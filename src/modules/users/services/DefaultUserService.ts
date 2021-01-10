@@ -51,7 +51,14 @@ class DefaultUserService {
 
   public async findAllStudents(query: any): Promise<Pagination> {
     const built = this.queryBuilderProvider.buildQuery(query);
-    const students = await this.studentsRepository.findAllWithPagination(built);
+    let students = {} as Pagination;
+    if (query.name) {
+      students = await this.studentsRepository.findAllWithPaginationByName(
+        query.name,
+      );
+    } else {
+      students = await this.studentsRepository.findAllWithPagination(built);
+    }
     return students;
   }
 

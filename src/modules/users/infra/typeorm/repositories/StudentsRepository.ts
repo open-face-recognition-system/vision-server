@@ -25,6 +25,15 @@ class StudentsRepository implements IStudentsRepository {
     };
   }
 
+  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
+    const students = await this.ormRepository
+      .createQueryBuilder('student')
+      .innerJoinAndSelect('student.user', 'user')
+      .where('user.name ILIKE :name', { name: `%${name}%` })
+      .paginate();
+    return students;
+  }
+
   public async findAll(): Promise<Student[]> {
     const students = await this.ormRepository.find({
       relations: ['user', 'photos'],

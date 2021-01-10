@@ -52,7 +52,7 @@ class SubjectsController {
     const { id } = request.params;
 
     const subjectsService = container.resolve(SubjectsService);
-    await subjectsService.deleteDemester(Number(id));
+    await subjectsService.deleteSubject(Number(id));
 
     return response.status(204).json();
   }

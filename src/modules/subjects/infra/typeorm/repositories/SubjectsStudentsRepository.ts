@@ -3,6 +3,7 @@ import ISaveSubjectStudentDOT from '@modules/subjects/dtos/ISaveSubjectStudentDO
 import ISubjectsStudentsRepository from '@modules/subjects/repositories/ISubjectsStudentsRepository';
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import { getRepository, Repository } from 'typeorm';
+import Subject from '../entities/Subject';
 import SubjectStudent from '../entities/SubjectStudent';
 
 class SubjectsStudentsRepository implements ISubjectsStudentsRepository {
@@ -19,12 +20,13 @@ class SubjectsStudentsRepository implements ISubjectsStudentsRepository {
   }
 
   public async findByStudent(
+    subject: Subject,
     student: Student,
   ): Promise<SubjectStudent | undefined> {
-    const subject = await this.ormRepository.findOne({
-      where: { student },
+    const findSubject = await this.ormRepository.findOne({
+      where: { student, subject },
     });
-    return subject;
+    return findSubject;
   }
 
   public async deleteByStudent(student: Student): Promise<void> {

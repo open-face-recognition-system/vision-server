@@ -7,6 +7,6 @@ import Role from '@modules/users/infra/typeorm/entities/Role';
 define(Student, (faker: typeof Faker) => {
   const student = new Student();
   student.enrollment = faker.internet.password(10, false, /[0-9]/);
-  student.user = factory(User)({ role: Role.STUDENT }) as any;
+  student.user = factory(User)(Role.STUDENT) as any;
   return student;
 });

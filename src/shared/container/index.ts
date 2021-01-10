@@ -23,6 +23,8 @@ import IClassesRepository from '@modules/semesters/repositories/IClassesReposito
 import ClassesRepository from '@modules/semesters/infra/typeorm/repositories/ClassesRepository';
 import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
 import AttendancesRepository from '@modules/semesters/infra/typeorm/repositories/AttendancesRepository';
+import IRecognitionFilesRepository from '@modules/recognition/repositories/IRecognitionFilesRepository';
+import RecognitionFilesRepository from '@modules/recognition/infra/typeorm/repositories/RecognitionFilesRepository';
 
 container.registerSingleton<IUsersRepository>(
   'UsersRepository',
@@ -72,4 +74,9 @@ container.registerSingleton<IAttendancesRepository>(
 container.registerSingleton<IRefreshTokensRepository>(
   'RefreshTokensRepository',
   RefreshTokensRepository,
+);
+
+container.registerSingleton<IRecognitionFilesRepository>(
+  'RecognitionFilesRepository',
+  RecognitionFilesRepository,
 );

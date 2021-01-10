@@ -1,6 +1,6 @@
+import Semester from '@modules/semesters/infra/typeorm/entities/Semester';
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
-import Semester from '@modules/semesters/infra/typeorm/entities/Semester';
 
 define(Semester, (faker: typeof Faker) => {
   const semester = new Semester();

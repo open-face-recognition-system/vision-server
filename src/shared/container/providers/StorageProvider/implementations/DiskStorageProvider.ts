@@ -4,6 +4,15 @@ import uploadConfig from '@config/upload';
 import IStorageProvider from '../models/IStorageProvider';
 
 class DiskStorageProvider implements IStorageProvider {
+  public async saveRecognitionFile(file: string): Promise<string> {
+    await fs.promises.rename(
+      path.resolve(uploadConfig.tmpFolder, file),
+      path.resolve(uploadConfig.recognitionFilesFolder, file),
+    );
+
+    return file;
+  }
+
   public async saveFile(file: string): Promise<string> {
     await fs.promises.rename(
       path.resolve(uploadConfig.tmpFolder, file),

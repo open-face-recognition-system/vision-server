@@ -8,6 +8,7 @@ interface IUploadConfig {
   driver: 'do' | 'disk';
   tmpFolder: string;
   uploadsFolder: string;
+  recognitionFilesFolder: string;
   multer: {
     storage: StorageEngine;
   };
@@ -15,6 +16,7 @@ interface IUploadConfig {
     do: {
       endpoint: string;
       bucket: string;
+      recognitionBucket: string;
       region: string;
       accessKeyId: string;
       secretAccessKey: string;
@@ -26,6 +28,7 @@ export default {
   driver: process.env.STORAGE_DRIVER,
   tmpFolder,
   uploadsFolder: path.resolve(tmpFolder, 'uploads'),
+  recognitionFilesFolder: path.resolve(tmpFolder, 'recognitionFiles'),
   multer: {
     storage: multer.diskStorage({
       destination: tmpFolder,
@@ -41,6 +44,7 @@ export default {
     do: {
       endpoint: process.env.DO_ENDPOINT,
       bucket: process.env.DO_BUCKET,
+      recognitionBucket: process.env.DO_RECOGNITION_BUCKET,
       region: process.env.DO_DEFAULT_REGION,
       accessKeyId: process.env.DO_ACCESS_KEY_ID,
       secretAccessKey: process.env.DO_SECRET_ACCESS_KEY,

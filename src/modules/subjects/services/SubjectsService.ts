@@ -105,7 +105,7 @@ class SubjectsService {
     return subject;
   }
 
-  public async deleteDemester(id: number): Promise<void> {
+  public async deleteSubject(id: number): Promise<void> {
     await this.subjectsRepository.delete(id);
   }
 
@@ -126,10 +126,15 @@ class SubjectsService {
     }
 
     const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
+      subject,
       student,
     );
 
-    if (studentAlreadyEnrolled) {
+    if (studentAlreadyEnrolled && studentAlreadyEnrolled.isEnrolled) {
+      throw new AppError('Student already enrolled');
+    }
+
+    if (studentAlreadyEnrolled && !studentAlreadyEnrolled.isEnrolled) {
       await this.subjectsStudentsRepository.save({
         id: studentAlreadyEnrolled.id,
         isEnrolled: true,
@@ -164,6 +169,7 @@ class SubjectsService {
     }
 
     const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
+      subject,
       student,
     );
 

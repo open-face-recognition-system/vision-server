@@ -27,7 +27,9 @@ class SubjectsRepository implements ISubjectsRepository {
 
   public async findById(id: number): Promise<Subject | undefined> {
     const subject = await this.ormRepository.findOne({
-      where: { id },
+      where: {
+        id,
+      },
       relations: [
         'teacher',
         'teacher.user',
@@ -35,6 +37,7 @@ class SubjectsRepository implements ISubjectsRepository {
         'recognitionFile',
         'students.student',
         'students.student.user',
+        'students.student.photos',
       ],
     });
     return subject;

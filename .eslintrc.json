@@ -21,6 +21,7 @@
   ],
   "rules": {
     "no-underscore-dangle": "off",
+    "no-plusplus": "off",
     "no-param-reassign": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
