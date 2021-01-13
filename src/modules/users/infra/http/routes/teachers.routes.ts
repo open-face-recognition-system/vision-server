@@ -19,5 +19,15 @@ teachersRouter.post(
   }),
   teachersController.create,
 );
+teachersRouter.put(
+  '/:id',
+  celebrate({
+    [Segments.BODY]: {
+      name: Joi.string().required(),
+      email: Joi.string().required(),
+    },
+  }),
+  teachersController.update,
+);
 
 export default teachersRouter;

@@ -19,6 +19,10 @@ const app = express();
 
 app.use(express.json());
 app.use('/files', express.static(uploadConfig.uploadsFolder));
+app.use(
+  '/recognitionFiles',
+  express.static(uploadConfig.recognitionFilesFolder),
+);
 app.use(pagination);
 app.use(
   cors({

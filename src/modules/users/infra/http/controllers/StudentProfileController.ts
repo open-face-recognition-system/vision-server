@@ -5,7 +5,7 @@ import { classToClass } from 'class-transformer';
 import UpdateProfileService from '@modules/users/services/UpdateProfileService';
 import ShowProfileService from '@modules/users/services/ShowProfileService';
 
-class ProfileController {
+class StudentProfileController {
   public async show(request: Request, response: Response): Promise<Response> {
     const userId = request.user.id;
 
@@ -16,12 +16,13 @@ class ProfileController {
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
-    const userId = request.user.id;
-    const { oldPassword, password } = request.body;
+    const { id } = request.params;
+    const { name, email, oldPassword, password } = request.body;
 
     const updateProfile = container.resolve(UpdateProfileService);
-    const user = await updateProfile.execute({
-      userId,
+    const user = await updateProfile.updateStudentProfile(Number(id), {
+      name,
+      email,
       password,
       oldPassword,
     });
@@ -30,4 +31,4 @@ class ProfileController {
   }
 }
 
-export default ProfileController;
+export default StudentProfileController;

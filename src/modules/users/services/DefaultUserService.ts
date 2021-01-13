@@ -7,6 +7,12 @@ import Student from '../infra/typeorm/entities/Student';
 import Teacher from '../infra/typeorm/entities/Teacher';
 import IStudentsRepository from '../repositories/IStudentsRepository';
 import ITeachersRepository from '../repositories/ITeachersRepository';
+import IUsersRepository from '../repositories/IUsersRepository';
+
+interface UpdateDefaultUser {
+  name: string;
+  email: string;
+}
 
 @injectable()
 class DefaultUserService {
@@ -16,7 +22,11 @@ class DefaultUserService {
 
   private queryBuilderProvider: IQueryBuilderProvider;
 
+  private usersRepository: IUsersRepository;
+
   constructor(
+    @inject('UsersRepository')
+    usersRepository: IUsersRepository,
     @inject('StudentsRepository')
     studentsRepository: IStudentsRepository,
     @inject('TeachersRepository')
@@ -27,6 +37,7 @@ class DefaultUserService {
     this.studentsRepository = studentsRepository;
     this.teachersRepository = teachersRepository;
     this.queryBuilderProvider = queryBuilderProvider;
+    this.usersRepository = usersRepository;
   }
 
   public async findStudentById(studentId: number): Promise<Student> {
@@ -73,6 +84,40 @@ class DefaultUserService {
       teachers = await this.teachersRepository.findAllWithPagination(built);
     }
     return teachers;
+  }
+
+  public async updateTeacher(id: number, { name, email }: UpdateDefaultUser) {
+    const teacher = await this.teachersRepository.findById(id);
+
+    if (!teacher) {
+      throw new AppError('Teacher not found');
+    }
+
+    const { user } = teacher;
+
+    user.email = email;
+    user.name = name;
+
+    return this.usersRepository.save(user);
+  }
+
+  public async updateStudent(id: number, { name, email }: UpdateDefaultUser) {
+    const student = await this.studentsRepository.findById(id);
+
+    if (!student) {
+      throw new AppError('Student not found');
+    }
+
+    const { user } = student;
+
+    user.email = email;
+    user.name = name;
+
+    return this.usersRepository.save(user);
+  }
+
+  public async deleteUser(id: number) {
+    await this.usersRepository.delete(id);
   }
 }
 

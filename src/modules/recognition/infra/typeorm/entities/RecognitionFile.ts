@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import uploadConfig from '@config/upload';
 import { Entity } from 'typeorm/decorator/entity/Entity';
 
 @Entity('recognition_files')
@@ -17,7 +18,19 @@ class RecognitionFile {
 
   @Expose({ name: 'url' })
   getUrl(): string | null {
-    return this.path ? `${process.env.APP_URL}/files/${this.path}` : null;
+    if (!this.path) {
+      return null;
+    }
+    switch (uploadConfig.driver) {
+      case 'disk':
+        return this.path
+          ? `${process.env.APP_URL}/recognitionFiles/${this.path}`
+          : null;
+      case 'do':
+        return `${process.env.DO_URL}/recognitionFiles/${this.path}`;
+      default:
+        return null;
+    }
   }
 
   @CreateDateColumn({ name: 'created_at' })

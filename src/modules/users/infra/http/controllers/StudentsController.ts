@@ -29,6 +29,19 @@ class StudentsController {
 
     return response.json(classToClass(student));
   }
+
+  public async update(request: Request, response: Response): Promise<Response> {
+    const { id } = request.params;
+    const { name, email } = request.body;
+
+    const updateStudent = container.resolve(DefaultUserService);
+    const teacher = await updateStudent.updateStudent(Number(id), {
+      name,
+      email,
+    });
+
+    return response.json(classToClass(teacher));
+  }
 }
 
 export default StudentsController;
