@@ -1,13 +1,13 @@
 import { spawnSync } from 'child_process';
 import IRecognitionProvider from '../models/IRecognitionProvider';
 
-class EigenfacesProvider implements IRecognitionProvider {
+class FisherfacesProvider implements IRecognitionProvider {
   public async training(
     ids: number[],
     photosPath: string[],
     subjectId: number,
   ): Promise<string> {
-    const trainingPaht = './src/shared/infra/opencv/training/eigenfaces.py';
+    const trainingPaht = './src/shared/infra/opencv/training/fisherfaces.py';
     const pythonProcess = spawnSync('python', [
       trainingPaht,
       JSON.stringify(ids),
@@ -19,7 +19,7 @@ class EigenfacesProvider implements IRecognitionProvider {
   }
 
   public async recognize(id: number, photoPath: string): Promise<string> {
-    const recognizePath = './src/shared/infra/opencv/recognize/eigenfaces.py';
+    const recognizePath = './src/shared/infra/opencv/recognize/fisherfaces.py';
     const pythonProcess = spawnSync('python', [
       recognizePath,
       photoPath,
@@ -30,4 +30,4 @@ class EigenfacesProvider implements IRecognitionProvider {
   }
 }
 
-export default EigenfacesProvider;
+export default FisherfacesProvider;

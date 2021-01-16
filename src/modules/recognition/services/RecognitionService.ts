@@ -7,15 +7,27 @@ import uploadConfig from '@config/upload';
 import IRecognitionProvider from '@shared/container/providers/RecognitionProvider/models/IRecognitionProvider';
 import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
 import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
+import Student from '@modules/users/infra/typeorm/entities/Student';
+import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
+import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import IRecognitionFilesRepository from '../repositories/IRecognitionFilesRepository';
 
 interface IRequest {
   subjectId: number;
 }
 
+interface IRecognizeRequest {
+  classId: number;
+  filePath: string;
+}
+
 @injectable()
 class RecognitionService {
   private subjectsStudentsRepository: ISubjectsRepository;
+
+  private classesRepository: IClassesRepository;
+
+  private studentsRepository: IStudentsRepository;
 
   private recognitionProvider: IRecognitionProvider;
 
@@ -26,7 +38,11 @@ class RecognitionService {
   constructor(
     @inject('SubjectsRepository')
     subjectsStudentsRepository: ISubjectsRepository,
-    @inject('StorageProvider')
+    @inject('ClassesRepository')
+    classesRepository: IClassesRepository,
+    @inject('StudentsRepository')
+    studentsRepository: IStudentsRepository,
+    @inject('RecognizeFileStorageProvider')
     storageProvider: IStorageProvider,
     @inject('RecognitionProvider')
     recognitionProvider: IRecognitionProvider,
@@ -36,7 +52,39 @@ class RecognitionService {
     this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.recognitionProvider = recognitionProvider;
     this.storageProvider = storageProvider;
+    this.classesRepository = classesRepository;
+    this.studentsRepository = studentsRepository;
     this.recognitionFilesRepository = recognitionFilesRepository;
+  }
+
+  public async recognize({
+    classId,
+    filePath,
+  }: IRecognizeRequest): Promise<Student> {
+    const classExists = await this.classesRepository.findById(classId);
+
+    if (!classExists) {
+      throw new AppError('Class does not exists');
+    }
+
+    const { subject } = classExists;
+
+    const response = await this.recognitionProvider.recognize(
+      subject.id,
+      filePath,
+    );
+
+    await this.storageProvider.deleteTmpFile(filePath);
+
+    const studentId = response.split(',')[0];
+
+    const student = await this.studentsRepository.findById(Number(studentId));
+
+    if (!student) {
+      throw new AppError('Student does not exists');
+    }
+
+    return student;
   }
 
   public async training({ subjectId }: IRequest): Promise<void> {
@@ -77,7 +125,7 @@ class RecognitionService {
       filePath,
     );
     if (!fileExists) {
-      await this.storageProvider.saveRecognitionFile(filePath);
+      await this.storageProvider.saveFile(filePath);
       const recognitionFile = await this.recognitionFilesRepository.create({
         path: filePath,
       });

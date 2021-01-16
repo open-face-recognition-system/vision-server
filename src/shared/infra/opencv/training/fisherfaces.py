@@ -27,6 +27,6 @@ ids, faces = get_image_with_id()
 
 
 fisherface.train(faces, ids)
-fisherface.write("src/tmp/"+fileName+".yml")
+eigenface.write("tmp/subject-" + fileName + ".yml")
 
 print(fileName+".yml")

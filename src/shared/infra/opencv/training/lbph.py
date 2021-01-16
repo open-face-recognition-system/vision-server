@@ -27,6 +27,6 @@ ids, faces = get_image_with_id()
 
 
 lbph.train(faces, ids)
-lbph.write("src/tmp/"+fileName+".yml")
+eigenface.write("tmp/subject-" + fileName + ".yml")
 
 print(fileName+".yml")
