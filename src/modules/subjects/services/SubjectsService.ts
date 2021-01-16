@@ -184,6 +184,18 @@ class SubjectsService {
       student,
     });
   }
+
+  public async listAllByTeacher(teacherId: number): Promise<Subject[]> {
+    const teacher = await this.teachersRepository.findById(teacherId);
+
+    if (!teacher) {
+      throw new AppError('Teacher does not exists');
+    }
+
+    const classes = await this.subjectsRepository.findAllByTeacherId(teacherId);
+
+    return classes;
+  }
 }
 
 export default SubjectsService;

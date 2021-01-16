@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { celebrate, Segments, Joi } from 'celebrate';
 import ClassesController from '../controllers/ClassesController';
+import ClassesTeacherController from '../controllers/ClassesTeacherController';
 
 const classesRouter = Router();
 const classesController = new ClassesController();
+const classesTeacherController = new ClassesTeacherController();
 
 classesRouter.get('/', classesController.list);
 classesRouter.get('/:id', classesController.show);
@@ -34,5 +36,6 @@ classesRouter.put(
   classesController.update,
 );
 classesRouter.delete('/:id', classesController.delete);
+classesRouter.get('/teacher/:teacherId', classesTeacherController.list);
 
 export default classesRouter;

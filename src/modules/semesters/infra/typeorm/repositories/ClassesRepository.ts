@@ -39,6 +39,26 @@ class ClassesRepository implements IClassesRepository {
     return findClass;
   }
 
+  public async findAllByTeacherId(teacherId: number): Promise<Class[]> {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+
+    const classes = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where('teacher.id = :teacherId', { teacherId })
+      .andWhere('class.date BETWEEN :startDate AND :endDate', {
+        startDate: start as any,
+        endDate: end as any,
+      })
+      .orderBy('class.startHour', 'ASC')
+      .getMany();
+    return classes;
+  }
+
   public async create({
     startHour,
     endHour,

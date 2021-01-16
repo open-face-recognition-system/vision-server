@@ -1,4 +1,5 @@
 import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
+import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
 import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
 import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
@@ -23,6 +24,8 @@ class ClassesService {
 
   private semestersRepository: ISemestersRepository;
 
+  private teachersRepository: ITeachersRepository;
+
   private queryBuilderProvider: IQueryBuilderProvider;
 
   constructor(
@@ -32,12 +35,15 @@ class ClassesService {
     subjectsRepository: ISubjectsRepository,
     @inject('SemestersRepository')
     semestersRepository: ISemestersRepository,
+    @inject('TeachersRepository')
+    teachersRepository: ITeachersRepository,
     @inject('QueryBuilderProvider')
     queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.classesRepository = classesRepository;
     this.subjectsRepository = subjectsRepository;
     this.semestersRepository = semestersRepository;
+    this.teachersRepository = teachersRepository;
     this.queryBuilderProvider = queryBuilderProvider;
   }
 
@@ -115,6 +121,18 @@ class ClassesService {
 
   public async deleteClass(id: number): Promise<void> {
     await this.classesRepository.delete(id);
+  }
+
+  public async listAllByTeacher(teacherId: number): Promise<Class[]> {
+    const teacher = await this.teachersRepository.findById(teacherId);
+
+    if (!teacher) {
+      throw new AppError('Teacher does not exists');
+    }
+
+    const classes = await this.classesRepository.findAllByTeacherId(teacherId);
+
+    return classes;
   }
 }
 

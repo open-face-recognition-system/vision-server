@@ -21,7 +21,7 @@ class UsersController {
     const updateProfile = container.resolve(DefaultUserService);
     await updateProfile.deleteUser(Number(id));
 
-    return response.status(400).json();
+    return response.status(204).json();
   }
 }
 
