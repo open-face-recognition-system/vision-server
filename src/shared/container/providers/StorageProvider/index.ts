@@ -4,7 +4,7 @@ import uploadConfig from '@config/upload';
 import IStorageProvider from './models/IStorageProvider';
 import DiskStorageProvider from './implementations/DiskStorageProvider';
 import DOStorageProvider from './implementations/DOStorageProvider';
-import RecognizeFileStorageProvider from './implementations/RecognizeFileStorageProvider';
+import RecognitionFileStorageProvider from './implementations/RecognitionFileStorageProvider';
 
 const providers = {
   disk: DiskStorageProvider,
@@ -17,6 +17,6 @@ container.registerSingleton<IStorageProvider>(
 );
 
 container.registerSingleton<IStorageProvider>(
-  'RecognizeFileStorageProvider',
-  RecognizeFileStorageProvider,
+  'RecognitionFileStorageProvider',
+  RecognitionFileStorageProvider,
 );

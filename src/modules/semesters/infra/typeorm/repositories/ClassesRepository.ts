@@ -30,10 +30,12 @@ class ClassesRepository implements IClassesRepository {
       where: { id },
       relations: [
         'subject',
+        'subject.students',
+        'subject.students.student',
+        'subject.students.student.user',
         'semester',
         'attendances',
         'attendances.student',
-        'attendances.student.user',
       ],
     });
     return findClass;
@@ -57,6 +59,32 @@ class ClassesRepository implements IClassesRepository {
       .orderBy('class.startHour', 'ASC')
       .getMany();
     return classes;
+  }
+
+  public async findAllByTeacherIdWithPagination(
+    teacherId: number,
+    { where }: any,
+  ): Promise<Pagination> {
+    const classes = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getMany();
+
+    const count = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getCount();
+
+    return {
+      total: count,
+      data: classes || [],
+    };
   }
 
   public async create({

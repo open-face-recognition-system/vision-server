@@ -24,11 +24,7 @@ app.use(
   express.static(uploadConfig.recognitionFilesFolder),
 );
 app.use(pagination);
-app.use(
-  cors({
-    exposedHeaders: ['X-Total-Count', 'X-Total-Page'],
-  }),
-);
+app.use(cors());
 app.use(routes);
 app.use(errors());
 

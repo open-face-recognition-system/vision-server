@@ -1,33 +1,30 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import User from '@modules/users/infra/typeorm/entities/User';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
+import Pagination from '@shared/dtos/Pagination';
 import IStudentsRepository from '../IStudentsRepository';
 
 class FakeStudentsRepository implements IStudentsRepository {
-  findAllWithPaginationByName(name: string): Promise<PaginationAwareObject> {
-    throw new Error(`Method not implemented. ${name}`);
-  }
-
   private students: Student[] = [];
 
-  public async findAllWithPagination(
-    query: any,
-  ): Promise<PaginationAwareObject> {
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    if (!query) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
     return {
       data: this.students,
-      from: 1,
-      to: 2,
-      per_page: 15,
-      total: 2,
-      current_page: 1,
-      prev_page: null,
-      next_page: query,
+      total: this.students.length,
     };
   }
 
-  public async findAll(): Promise<Student[]> {
-    return this.students;
+  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
+    return {
+      data: this.students.find(student => student.user.name === name),
+      total: this.students.length,
+    };
   }
 
   public async findById(id: number): Promise<Student | undefined> {

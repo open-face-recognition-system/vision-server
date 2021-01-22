@@ -43,14 +43,27 @@ class SubjectsRepository implements ISubjectsRepository {
     return subject;
   }
 
-  public async findAllByTeacherId(teacherId: number): Promise<Subject[]> {
+  public async findAllByTeacherId(
+    teacherId: number,
+    { where }: any,
+  ): Promise<Pagination> {
     const subjects = await this.ormRepository
       .createQueryBuilder('subject')
       .innerJoinAndSelect('subject.teacher', 'teacher')
-      .where('teacher.id = :teacherId', { teacherId })
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
       .getMany();
 
-    return subjects;
+    const count = await this.ormRepository
+      .createQueryBuilder('subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getCount();
+    return {
+      total: count,
+      data: subjects || [],
+    };
   }
 
   public async create({

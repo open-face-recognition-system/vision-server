@@ -47,6 +47,20 @@ class AttendancesService {
     return semesters;
   }
 
+  public async listAllByClass(classId: number): Promise<Attendance[]> {
+    const classExists = await this.classesRepository.findById(classId);
+
+    if (!classExists) {
+      throw new AppError('Class does not exists');
+    }
+
+    const attendances = await this.attendancesRepository.findAllByClassId(
+      classId,
+    );
+
+    return attendances;
+  }
+
   public async showAttendance(id: number): Promise<Attendance | undefined> {
     const attendance = await this.attendancesRepository.findById(id);
 

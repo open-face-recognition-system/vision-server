@@ -13,7 +13,7 @@ class EigenfacesProvider implements IRecognitionProvider {
       JSON.stringify(ids),
       JSON.stringify(photosPath),
       String(subjectId),
-    ]);
+    ]).stdout;
 
     return pythonProcess.toString();
   }

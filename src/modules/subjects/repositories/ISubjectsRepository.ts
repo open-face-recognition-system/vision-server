@@ -5,7 +5,7 @@ import Subject from '../infra/typeorm/entities/Subject';
 
 interface ISubjectsRepository {
   findAllWithPagination(query: any): Promise<Pagination>;
-  findAllByTeacherId(teacherId: number): Promise<Subject[]>;
+  findAllByTeacherId(teacherId: number, query: any): Promise<Pagination>;
   findById(id: number): Promise<Subject | undefined>;
   create(subject: ICreateSubjectDOT): Promise<Subject>;
   delete(id: number): Promise<void>;

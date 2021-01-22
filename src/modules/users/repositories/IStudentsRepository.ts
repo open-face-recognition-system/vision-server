@@ -6,7 +6,6 @@ import User from '../infra/typeorm/entities/User';
 interface IStudentsRepository {
   findAllWithPagination(query: any): Promise<Pagination>;
   findAllWithPaginationByName(name: string): Promise<Pagination>;
-  findAll(): Promise<Student[]>;
   findById(id: number): Promise<Student | undefined>;
   findByUser(user: User): Promise<Student | undefined>;
   findByEnrollment(enrollment: string): Promise<Student | undefined>;

@@ -22,6 +22,18 @@ class AttendancesRepository implements IAttendancesRepository {
     };
   }
 
+  public async findAllByClassId(classId: number): Promise<Attendance[]> {
+    const attendances = await this.ormRepository
+      .createQueryBuilder('attendance')
+      .innerJoinAndSelect('attendance.student', 'student')
+      .innerJoinAndSelect('student.user', 'user')
+      .innerJoinAndSelect('attendance.class', 'class')
+      .where('class.id = :classId', { classId })
+      .getMany();
+
+    return attendances;
+  }
+
   public async findById(id: number): Promise<Attendance | undefined> {
     const attendance = await this.ormRepository.findOne({
       where: { id },

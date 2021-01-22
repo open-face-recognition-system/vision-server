@@ -3,7 +3,7 @@ import RecognitionFile from '../infra/typeorm/entities/RecognitionFile';
 
 export default interface IRecognitionFilesRepository {
   findByPath(path: string): Promise<RecognitionFile | undefined>;
-  create(photo: ICreateRecognitionFileDOT): Promise<RecognitionFile>;
+  create(recognitionFile: ICreateRecognitionFileDOT): Promise<RecognitionFile>;
   delete(id: number): Promise<void>;
-  save(photo: RecognitionFile): Promise<RecognitionFile>;
+  save(recognitionFile: RecognitionFile): Promise<RecognitionFile>;
 }

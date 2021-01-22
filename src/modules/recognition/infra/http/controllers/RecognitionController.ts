@@ -6,7 +6,10 @@ import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
 class RecognizeController {
-  public async create(request: Request, response: Response): Promise<Response> {
+  public async recognize(
+    request: Request,
+    response: Response,
+  ): Promise<Response> {
     const { classId } = request.params;
     const { filename: file } = request.file;
 
@@ -19,6 +22,20 @@ class RecognizeController {
     });
 
     return response.status(200).json(student);
+  }
+
+  public async training(
+    request: Request,
+    response: Response,
+  ): Promise<Response> {
+    const { subjectId } = request.params;
+
+    const subjectsService = container.resolve(RecognitionService);
+    await subjectsService.training({
+      subjectId: Number(subjectId),
+    });
+
+    return response.status(204).json();
   }
 }
 

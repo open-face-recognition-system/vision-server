@@ -5,13 +5,13 @@ import Subject from '../infra/typeorm/entities/Subject';
 import SubjectStudent from '../infra/typeorm/entities/SubjectStudent';
 
 interface ISubjectsStudentsRepository {
-  deleteByStudent(student: Student): Promise<void>;
   findByStudent(
     subject: Subject,
-    IDstudent: Student,
+    student: Student,
   ): Promise<SubjectStudent | undefined>;
-  create(subject: ICreateSubjectStudentDOT): Promise<SubjectStudent>;
-  save(subject: ISaveSubjectStudentDOT): Promise<SubjectStudent>;
+  create(subjectStudent: ICreateSubjectStudentDOT): Promise<SubjectStudent>;
+  deleteByStudent(student: Student): Promise<void>;
+  save(subjectStudent: ISaveSubjectStudentDOT): Promise<SubjectStudent>;
 }
 
 export default ISubjectsStudentsRepository;

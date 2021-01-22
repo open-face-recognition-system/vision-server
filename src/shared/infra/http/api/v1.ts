@@ -12,10 +12,9 @@ import semestersRouter from '@modules/semesters/infra/http/routes/semesters.rout
 import subjectsRouter from '@modules/subjects/infra/http/routes/subjects.routes';
 import classesRouter from '@modules/semesters/infra/http/routes/classes.routes';
 import attendancesRouter from '@modules/semesters/infra/http/routes/attendances.routes';
-import trainingRouter from '@modules/recognition/infra/http/routes/training.routes';
 import classesTeacherRouter from '@modules/semesters/infra/http/routes/classesTeacher.routes';
 import subjectsTeacherRouter from '@modules/subjects/infra/http/routes/subjectsTeacher.routes';
-import recognizeRouter from '@modules/recognition/infra/http/routes/recognize.routes';
+import recognitionRouter from '@modules/recognition/infra/http/routes/recognition.routes';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const v1Router = Router();
@@ -39,16 +38,15 @@ v1Router.use((request: Request, response: Response, next: NextFunction) => {
 });
 v1Router.use('/classes', classesTeacherRouter);
 v1Router.use('/subjects', subjectsTeacherRouter);
+v1Router.use('/subjects', subjectsRouter);
+v1Router.use('/classes', classesRouter);
+v1Router.use('/recognition', recognitionRouter);
+v1Router.use('/attendances', attendancesRouter);
 
 v1Router.use((request: Request, response: Response, next: NextFunction) => {
   ensureAuthenticated(['admin'], request, response, next);
 });
 
 v1Router.use('/semesters', semestersRouter);
-v1Router.use('/subjects', subjectsRouter);
-v1Router.use('/classes', classesRouter);
-v1Router.use('/attendances', attendancesRouter);
-v1Router.use('/training', trainingRouter);
-v1Router.use('/recognize', recognizeRouter);
 
 export default v1Router;

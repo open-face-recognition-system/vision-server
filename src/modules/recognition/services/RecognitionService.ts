@@ -10,6 +10,9 @@ import IStorageProvider from '@shared/container/providers/StorageProvider/models
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
+import Photo from '@modules/photos/infra/typeorm/entities/Photo';
+import SubjectStudent from '@modules/subjects/infra/typeorm/entities/SubjectStudent';
+import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
 import IRecognitionFilesRepository from '../repositories/IRecognitionFilesRepository';
 
 interface IRequest {
@@ -21,6 +24,16 @@ interface IRecognizeRequest {
   filePath: string;
 }
 
+interface IRecognizeResponse {
+  student: Student;
+  confidence: number;
+}
+
+interface TrainingResponse {
+  ids: number[];
+  photosPath: string[];
+}
+
 @injectable()
 class RecognitionService {
   private subjectsStudentsRepository: ISubjectsRepository;
@@ -28,6 +41,8 @@ class RecognitionService {
   private classesRepository: IClassesRepository;
 
   private studentsRepository: IStudentsRepository;
+
+  private attendancesRepository: IAttendancesRepository;
 
   private recognitionProvider: IRecognitionProvider;
 
@@ -42,15 +57,18 @@ class RecognitionService {
     classesRepository: IClassesRepository,
     @inject('StudentsRepository')
     studentsRepository: IStudentsRepository,
-    @inject('RecognizeFileStorageProvider')
+    @inject('RecognitionFileStorageProvider')
     storageProvider: IStorageProvider,
     @inject('RecognitionProvider')
     recognitionProvider: IRecognitionProvider,
+    @inject('AttendancesRepository')
+    attendancesRepository: IAttendancesRepository,
     @inject('RecognitionFilesRepository')
     recognitionFilesRepository: IRecognitionFilesRepository,
   ) {
     this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.recognitionProvider = recognitionProvider;
+    this.attendancesRepository = attendancesRepository;
     this.storageProvider = storageProvider;
     this.classesRepository = classesRepository;
     this.studentsRepository = studentsRepository;
@@ -60,7 +78,7 @@ class RecognitionService {
   public async recognize({
     classId,
     filePath,
-  }: IRecognizeRequest): Promise<Student> {
+  }: IRecognizeRequest): Promise<IRecognizeResponse> {
     const classExists = await this.classesRepository.findById(classId);
 
     if (!classExists) {
@@ -76,7 +94,7 @@ class RecognitionService {
 
     await this.storageProvider.deleteTmpFile(filePath);
 
-    const studentId = response.split(',')[0];
+    const [studentId, confidence] = response.split(',');
 
     const student = await this.studentsRepository.findById(Number(studentId));
 
@@ -84,13 +102,28 @@ class RecognitionService {
       throw new AppError('Student does not exists');
     }
 
-    return student;
+    const attendances = await this.attendancesRepository.findAllByClassId(
+      classId,
+    );
+
+    const findAttendance = attendances.find(
+      attendance => attendance.student.id === student.id,
+    );
+
+    if (findAttendance) {
+      this.attendancesRepository.save({
+        id: findAttendance.id,
+        class: classExists,
+        student,
+        isPresent: true,
+      });
+    }
+
+    return { student, confidence: Number(confidence) };
   }
 
   public async training({ subjectId }: IRequest): Promise<void> {
     const subject = await this.subjectsStudentsRepository.findById(subjectId);
-    const ids: number[] = [];
-    const photosPath: string[] = [];
 
     if (!subject) {
       throw new AppError('Subject does not exists');
@@ -102,17 +135,24 @@ class RecognitionService {
       throw new AppError('Subject needs at least one student');
     }
 
+    const ids: number[] = [];
+    const photosPath: string[] = [];
+
     const studentsPromise = students.map(async subjectStudent => {
-      const downloadPhotosPromise = subjectStudent.student.photos.map(
-        async photo => {
-          await this.download(photo.getUrl() || '', photo.path);
-          const photoPath = path.resolve(uploadConfig.tmpFolder, photo.path);
-          photosPath.push(photoPath);
-          ids.push(subjectStudent.student.id);
-        },
-      );
-      await Promise.all(downloadPhotosPromise);
+      const { photos } = subjectStudent.student;
+
+      if (photos.length === 0) {
+        throw new AppError('Student needs at least one photo');
+      }
+
+      const photosIds = this.getAllPhotosAndIds(subjectStudent);
+
+      ids.push(...photosIds.ids);
+      photosPath.push(...photosIds.photosPath);
+
+      await this.downloadAllStudentsPhotos(photos);
     });
+
     await Promise.all(studentsPromise);
 
     const fileName = await this.recognitionProvider.training(
@@ -120,12 +160,13 @@ class RecognitionService {
       photosPath,
       subject.id,
     );
+
     const filePath = fileName.trim();
     const fileExists = await this.recognitionFilesRepository.findByPath(
       filePath,
     );
+    await this.storageProvider.saveFile(filePath);
     if (!fileExists) {
-      await this.storageProvider.saveFile(filePath);
       const recognitionFile = await this.recognitionFilesRepository.create({
         path: filePath,
       });
@@ -135,6 +176,25 @@ class RecognitionService {
       });
     }
 
+    await this.deleteTmpFile();
+  }
+
+  getAllPhotosAndIds(subjectStudent: SubjectStudent): TrainingResponse {
+    const { photos } = subjectStudent.student;
+    const ids: number[] = [];
+    const photosPath: string[] = [];
+    photos.map(async photo => {
+      const photoPath = path.resolve(uploadConfig.tmpFolder, photo.path);
+      photosPath.push(photoPath);
+      ids.push(subjectStudent.student.id);
+    });
+    return {
+      ids,
+      photosPath,
+    };
+  }
+
+  async deleteTmpFile(): Promise<void> {
     fs.readdir('./tmp', (err, files) => {
       files.forEach(async file => {
         const stat = await fs.promises.lstat(`./tmp/${file}`);
@@ -143,6 +203,14 @@ class RecognitionService {
         }
       });
     });
+  }
+
+  public async downloadAllStudentsPhotos(photos: Photo[]): Promise<void> {
+    const downloadPhotosPromise = photos.map(async photo => {
+      await this.download(photo.getUrl() || '', photo.path);
+    });
+
+    await Promise.all(downloadPhotosPromise);
   }
 
   private async download(uri: string, filename: string): Promise<void> {

@@ -10,6 +10,7 @@ class ClassesTeacherController {
     const classesService = container.resolve(ClassesService);
     const classes = await classesService.listAllByTeacher(
       teacherId ? Number(teacherId) : userId,
+      request.query,
     );
     return response.json(classToClass(classes));
   }

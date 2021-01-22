@@ -3,10 +3,8 @@ import path from 'path';
 import uploadConfig from '@config/upload';
 import IStorageProvider from '../models/IStorageProvider';
 
-class RecognizeFileStorageProvider implements IStorageProvider {
+class RecognitionFileStorageProvider implements IStorageProvider {
   public async saveFile(file: string): Promise<string> {
-    console.log('salvando em:', uploadConfig.recognitionFilesFolder);
-
     await fs.promises.rename(
       path.resolve(uploadConfig.tmpFolder, file),
       path.resolve(uploadConfig.recognitionFilesFolder, file),
@@ -33,4 +31,4 @@ class RecognizeFileStorageProvider implements IStorageProvider {
   }
 }
 
-export default RecognizeFileStorageProvider;
+export default RecognitionFileStorageProvider;

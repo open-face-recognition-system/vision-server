@@ -1,10 +1,6 @@
 import IStorageProvider from '../models/IStorageProvider';
 
 class FakeStorageProvider implements IStorageProvider {
-  saveRecognitionFile(file: string): Promise<string> {
-    throw new Error(`Method not implemented.${file}`);
-  }
-
   private storage: string[] = [];
 
   public async saveFile(file: string): Promise<string> {
