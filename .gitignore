@@ -21,6 +21,7 @@ Icon
 
 # Tmp folder
 tmp/*
+*.yml
 
 # Orm config
 ormconfig.json

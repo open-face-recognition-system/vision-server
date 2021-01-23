@@ -19,5 +19,15 @@ studentsRouter.post(
   }),
   studentsController.create,
 );
+studentsRouter.put(
+  '/:id',
+  celebrate({
+    [Segments.BODY]: {
+      name: Joi.string().required(),
+      email: Joi.string().required(),
+    },
+  }),
+  studentsController.update,
+);
 
 export default studentsRouter;

@@ -1,10 +1,17 @@
+import PDFParser from 'pdf2json';
+import Student from '@modules/users/infra/typeorm/entities/Student';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
+import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
+import uploadConfig from '@config/upload';
+import IUsersRepository from '@modules/users/repositories/IUsersRepository';
+import Role from '@modules/users/infra/typeorm/entities/Role';
+import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider';
 import Subject from '../infra/typeorm/entities/Subject';
-import SubjectStudent from '../infra/typeorm/entities/SubjectStudent';
 import ISubjectsRepository from '../repositories/ISubjectsRepository';
 import ISubjectsStudentsRepository from '../repositories/ISubjectsStudentsRepository';
 
@@ -15,34 +22,61 @@ interface IRequest {
   teacherId: number;
 }
 
+interface StudentAux {
+  name: string;
+  email: string;
+  enrollment: string;
+}
+
 @injectable()
 class SubjectsService {
   private subjectsRepository: ISubjectsRepository;
 
   private studentsRepository: IStudentsRepository;
 
+  private usersRepository: IUsersRepository;
+
   private subjectsStudentsRepository: ISubjectsStudentsRepository;
 
   private teachersRepository: ITeachersRepository;
+
+  private queryBuilderProvider: IQueryBuilderProvider;
+
+  private hashProvider: IHashProvider;
+
+  private storageProvider: IStorageProvider;
 
   constructor(
     @inject('SubjectsRepository')
     subjectsRepository: ISubjectsRepository,
     @inject('StudentsRepository')
     studentsRepository: IStudentsRepository,
+    @inject('UsersRepository')
+    usersRepository: IUsersRepository,
     @inject('SubjectsStudentsRepository')
     subjectsStudentsRepository: ISubjectsStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
+    @inject('StorageProvider')
+    storageProvider: IStorageProvider,
+    @inject('HashProvider')
+    hashProvider: IHashProvider,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.subjectsRepository = subjectsRepository;
     this.studentsRepository = studentsRepository;
+    this.usersRepository = usersRepository;
     this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.teachersRepository = teachersRepository;
+    this.storageProvider = storageProvider;
+    this.hashProvider = hashProvider;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
-  public async listSubjects(): Promise<PaginationAwareObject> {
-    const subjects = await this.subjectsRepository.findAllWithPagination();
+  public async listSubjects(query: any): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    const subjects = await this.subjectsRepository.findAllWithPagination(built);
     return subjects;
   }
 
@@ -77,6 +111,81 @@ class SubjectsService {
     return subject;
   }
 
+  public async createAndEnrollStudentsByPdf(id: number, filename: string) {
+    const subject = await this.subjectsRepository.findById(id);
+
+    if (!subject) {
+      throw new AppError('Subject does not exists');
+    }
+
+    const pdfPath = `${uploadConfig.tmpFolder}/${filename}`;
+
+    const pdfParser = new PDFParser();
+
+    const students: StudentAux[] = [];
+    const enrolledStudents: Student[] = [];
+
+    pdfParser.loadPDF(pdfPath);
+
+    return new Promise(resolve => {
+      pdfParser.on('pdfParser_dataReady', async (pdfData: any) => {
+        const pages = pdfData.formImage.Pages;
+        const pagesPromise = pages.map(async (page: any) => {
+          const texts = page.Texts;
+          let nextInfo = 14;
+
+          for (let i = 14; i < texts.length; i++) {
+            if (i === nextInfo && i + 5 < texts.length) {
+              const name = this.formatName(texts[i].R[0].T);
+
+              if (!this.hasNumbers(name)) {
+                const enrollment = texts[i + 1].R[0].T;
+                let email = this.formatEmail(texts[i + 4].R[0].T);
+                if (!this.hasNumbers(texts[i + 5].R[0].T)) {
+                  email += texts[i + 5]?.R[0].T;
+                  nextInfo = i + 7;
+                } else {
+                  nextInfo = i + 6;
+                }
+                students.push({
+                  name,
+                  email,
+                  enrollment,
+                });
+              }
+            }
+          }
+
+          const studentsPromise = students.map(async student => {
+            const enrolledStudent = await this.enrollOrCreateStudent(
+              student,
+              subject,
+            );
+            enrolledStudents.push(enrolledStudent);
+          });
+
+          await Promise.all(studentsPromise);
+        });
+        await Promise.all(pagesPromise);
+        await this.storageProvider.deleteTmpFile(filename);
+        resolve(enrolledStudents);
+      });
+    });
+  }
+
+  private hasNumbers(text: string): boolean {
+    const re = new RegExp('^[+-]?(([1-9][0-9]*)?[0-9](.[0-9]*)?|.[0-9]+)$');
+    return re.test(text.trim());
+  }
+
+  private formatName(nameToFormat: string): string {
+    return nameToFormat.split('%20').join(' ');
+  }
+
+  private formatEmail(emailToFormat: string): string {
+    return emailToFormat.split('%40').join('@');
+  }
+
   public async updateSubject(
     id: number,
     { name, description, course, teacherId }: IRequest,
@@ -98,14 +207,59 @@ class SubjectsService {
     return subject;
   }
 
-  public async deleteDemester(id: number): Promise<void> {
+  public async deleteSubject(id: number): Promise<void> {
     await this.subjectsRepository.delete(id);
+  }
+
+  public async enrollOrCreateStudent(
+    studentAux: StudentAux,
+    subject: Subject,
+  ): Promise<Student> {
+    const { name, email, enrollment } = studentAux;
+    let student = await this.studentsRepository.findByEnrollment(enrollment);
+    const hashedPassword = await this.hashProvider.generateHash('123123');
+
+    if (!student) {
+      const user = await this.usersRepository.create({
+        name,
+        email,
+        password: hashedPassword,
+        role: Role.STUDENT,
+      });
+
+      student = await this.studentsRepository.create({
+        user,
+        enrollment,
+      });
+    }
+
+    const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
+      subject,
+      student,
+    );
+
+    if (studentAlreadyEnrolled && !studentAlreadyEnrolled.isEnrolled) {
+      await this.subjectsStudentsRepository.save({
+        id: studentAlreadyEnrolled.id,
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    } else if (!studentAlreadyEnrolled) {
+      await this.subjectsStudentsRepository.create({
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    }
+
+    return student;
   }
 
   public async enrollStudent(
     subjectId: number,
     studentId: number,
-  ): Promise<SubjectStudent> {
+  ): Promise<Student> {
     const subject = await this.subjectsRepository.findById(subjectId);
 
     if (!subject) {
@@ -118,13 +272,31 @@ class SubjectsService {
       throw new AppError('Student does not exists');
     }
 
-    const subjectStudent = await this.subjectsStudentsRepository.save({
-      isEnrolled: true,
+    const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
       subject,
       student,
-    });
+    );
 
-    return subjectStudent;
+    if (studentAlreadyEnrolled && studentAlreadyEnrolled.isEnrolled) {
+      throw new AppError('Student already enrolled');
+    }
+
+    if (studentAlreadyEnrolled && !studentAlreadyEnrolled.isEnrolled) {
+      await this.subjectsStudentsRepository.save({
+        id: studentAlreadyEnrolled.id,
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    } else {
+      await this.subjectsStudentsRepository.create({
+        isEnrolled: true,
+        subject,
+        student,
+      });
+    }
+
+    return student;
   }
 
   public async unenrollStudent(
@@ -143,7 +315,40 @@ class SubjectsService {
       throw new AppError('Student does not exists');
     }
 
-    await this.subjectsStudentsRepository.deleteByStudent(student);
+    const studentAlreadyEnrolled = await this.subjectsStudentsRepository.findByStudent(
+      subject,
+      student,
+    );
+
+    if (!studentAlreadyEnrolled) {
+      throw new AppError('Student does not enrolled on this subject');
+    }
+
+    await this.subjectsStudentsRepository.save({
+      id: studentAlreadyEnrolled.id,
+      isEnrolled: false,
+      subject,
+      student,
+    });
+  }
+
+  public async listAllByTeacher(
+    teacherId: number,
+    query: any,
+  ): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    const teacher = await this.teachersRepository.findById(teacherId);
+
+    if (!teacher) {
+      throw new AppError('Teacher does not exists');
+    }
+
+    const subjects = await this.subjectsRepository.findAllByTeacherId(
+      teacherId,
+      built,
+    );
+
+    return subjects;
   }
 }
 

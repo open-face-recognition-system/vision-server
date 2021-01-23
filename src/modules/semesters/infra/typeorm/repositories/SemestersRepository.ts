@@ -1,8 +1,8 @@
 import ICreateSemesterDTO from '@modules/semesters/dtos/ICreateSemesterDTO';
 import ISaveSemesterDTO from '@modules/semesters/dtos/ISaveSemesterDTO';
 import ISemestersRepository from '@modules/semesters/repositories/ISemestersRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Semester from '../entities/Semester';
 
 class SemestersRepository implements ISemestersRepository {
@@ -12,12 +12,14 @@ class SemestersRepository implements ISemestersRepository {
     this.ormRepository = getRepository(Semester);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
-    const semesters = await this.ormRepository
-      .createQueryBuilder('semester')
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const semesters = await this.ormRepository.find(query);
 
-    return semesters;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: semesters || [],
+    };
   }
 
   public async findById(id: number): Promise<Semester | undefined> {

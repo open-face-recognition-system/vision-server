@@ -19,12 +19,12 @@ const app = express();
 
 app.use(express.json());
 app.use('/files', express.static(uploadConfig.uploadsFolder));
-app.use(pagination);
 app.use(
-  cors({
-    exposedHeaders: ['X-Total-Count', 'X-Total-Page'],
-  }),
+  '/recognitionFiles',
+  express.static(uploadConfig.recognitionFilesFolder),
 );
+app.use(pagination);
+app.use(cors());
 app.use(routes);
 app.use(errors());
 

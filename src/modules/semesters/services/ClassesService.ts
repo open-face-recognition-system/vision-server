@@ -1,8 +1,11 @@
 import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
+import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
+import IQueryBuilderProvider from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import Pagination from '@shared/dtos/Pagination';
 import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Class from '../infra/typeorm/entities/Class';
+import IAttendancesRepository from '../repositories/IAttendancesRepository';
 import IClassesRepository from '../repositories/IClassesRepository';
 import ISemestersRepository from '../repositories/ISemestersRepository';
 
@@ -22,6 +25,12 @@ class ClassesService {
 
   private semestersRepository: ISemestersRepository;
 
+  private teachersRepository: ITeachersRepository;
+
+  private queryBuilderProvider: IQueryBuilderProvider;
+
+  private attendancesRepository: IAttendancesRepository;
+
   constructor(
     @inject('ClassesRepository')
     classesRepository: IClassesRepository,
@@ -29,14 +38,24 @@ class ClassesService {
     subjectsRepository: ISubjectsRepository,
     @inject('SemestersRepository')
     semestersRepository: ISemestersRepository,
+    @inject('TeachersRepository')
+    teachersRepository: ITeachersRepository,
+    @inject('AttendancesRepository')
+    attendancesRepository: IAttendancesRepository,
+    @inject('QueryBuilderProvider')
+    queryBuilderProvider: IQueryBuilderProvider,
   ) {
     this.classesRepository = classesRepository;
     this.subjectsRepository = subjectsRepository;
     this.semestersRepository = semestersRepository;
+    this.attendancesRepository = attendancesRepository;
+    this.teachersRepository = teachersRepository;
+    this.queryBuilderProvider = queryBuilderProvider;
   }
 
-  public async listClasses(): Promise<PaginationAwareObject> {
-    const classes = await this.classesRepository.findAllWithPagination();
+  public async listClasses(query: any): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    const classes = await this.classesRepository.findAllWithPagination(built);
     return classes;
   }
 
@@ -69,6 +88,8 @@ class ClassesService {
       throw new AppError('Subject does not exists');
     }
 
+    const { students } = subject;
+
     const newClass = await this.classesRepository.create({
       startHour,
       endHour,
@@ -76,6 +97,18 @@ class ClassesService {
       semester,
       subject,
     });
+
+    const subjectStudentsPromise = students.map(async studentSubject => {
+      const { student } = studentSubject;
+      await this.attendancesRepository.create({
+        isPresent: false,
+        class: newClass,
+        student,
+      });
+    });
+
+    await Promise.all(subjectStudentsPromise);
+
     return newClass;
   }
 
@@ -108,6 +141,37 @@ class ClassesService {
 
   public async deleteClass(id: number): Promise<void> {
     await this.classesRepository.delete(id);
+  }
+
+  public async listAllByTeacherForMobile(teacherId: number): Promise<Class[]> {
+    const teacher = await this.teachersRepository.findById(teacherId);
+
+    if (!teacher) {
+      throw new AppError('Teacher does not exists');
+    }
+
+    const classes = await this.classesRepository.findAllByTeacherId(teacherId);
+
+    return classes;
+  }
+
+  public async listAllByTeacher(
+    teacherId: number,
+    query: any,
+  ): Promise<Pagination> {
+    const built = this.queryBuilderProvider.buildQuery(query);
+    const teacher = await this.teachersRepository.findById(teacherId);
+
+    if (!teacher) {
+      throw new AppError('Teacher does not exists');
+    }
+
+    const classes = await this.classesRepository.findAllByTeacherIdWithPagination(
+      teacherId,
+      built,
+    );
+
+    return classes;
   }
 }
 

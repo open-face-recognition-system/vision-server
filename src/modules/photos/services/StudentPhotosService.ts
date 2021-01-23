@@ -72,7 +72,7 @@ class StudentPhotosService {
       }
     }
 
-    const photos = await this.photosRepository.listByStudentId(studentId);
+    const photos = await this.photosRepository.findByStudentId(studentId);
     photos.forEach(photo => {
       const index = fooStudentPhotos.findIndex(fooStudentPhoto => {
         return (
@@ -99,7 +99,7 @@ class StudentPhotosService {
       throw new AppError('Student does not exists');
     }
 
-    const studentPhotos = await this.photosRepository.listByStudentId(
+    const studentPhotos = await this.photosRepository.findByStudentId(
       studentId,
     );
 
@@ -110,7 +110,7 @@ class StudentPhotosService {
 
     const parsedPhotoType = this.parsePhotoTypeStringToEnum(photoType);
 
-    const photosType = await this.photosRepository.listByPhotoType(
+    const photosType = await this.photosRepository.findByPhotoType(
       studentId,
       parsedPhotoType,
     );

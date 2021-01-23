@@ -8,6 +8,7 @@ interface IUploadConfig {
   driver: 'do' | 'disk';
   tmpFolder: string;
   uploadsFolder: string;
+  recognitionFilesFolder: string;
   multer: {
     storage: StorageEngine;
   };
@@ -26,6 +27,7 @@ export default {
   driver: process.env.STORAGE_DRIVER,
   tmpFolder,
   uploadsFolder: path.resolve(tmpFolder, 'uploads'),
+  recognitionFilesFolder: path.resolve(__dirname, '..', 'shared', 'files'),
   multer: {
     storage: multer.diskStorage({
       destination: tmpFolder,

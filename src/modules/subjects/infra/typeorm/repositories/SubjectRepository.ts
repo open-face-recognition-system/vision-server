@@ -1,8 +1,8 @@
 import ICreateSubjectDOT from '@modules/subjects/dtos/ICreateSubjectDOT';
 import ISaveSubjectDOT from '@modules/subjects/dtos/ISaveSubjectDOT';
 import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Subject from '../entities/Subject';
 
 class SubjectsRepository implements ISubjectsRepository {
@@ -12,19 +12,58 @@ class SubjectsRepository implements ISubjectsRepository {
     this.ormRepository = getRepository(Subject);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
-    const semesters = await this.ormRepository
-      .createQueryBuilder('subject')
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const subjects = await this.ormRepository.find({
+      ...query,
+      relations: ['teacher', 'teacher.user', 'recognitionFile'],
+    });
 
-    return semesters;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: subjects || [],
+    };
   }
 
   public async findById(id: number): Promise<Subject | undefined> {
-    const semester = await this.ormRepository.findOne({
-      where: { id },
+    const subject = await this.ormRepository.findOne({
+      where: {
+        id,
+      },
+      relations: [
+        'teacher',
+        'teacher.user',
+        'students',
+        'recognitionFile',
+        'students.student',
+        'students.student.user',
+        'students.student.photos',
+      ],
     });
-    return semester;
+    return subject;
+  }
+
+  public async findAllByTeacherId(
+    teacherId: number,
+    { where }: any,
+  ): Promise<Pagination> {
+    const subjects = await this.ormRepository
+      .createQueryBuilder('subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getMany();
+
+    const count = await this.ormRepository
+      .createQueryBuilder('subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getCount();
+    return {
+      total: count,
+      data: subjects || [],
+    };
   }
 
   public async create({
@@ -33,14 +72,14 @@ class SubjectsRepository implements ISubjectsRepository {
     course,
     teacher,
   }: ICreateSubjectDOT): Promise<Subject> {
-    const semester = this.ormRepository.create({
+    const subject = this.ormRepository.create({
       name,
       description,
       course,
       teacher,
     });
-    await this.ormRepository.save(semester);
-    return semester;
+    await this.ormRepository.save(subject);
+    return subject;
   }
 
   public async delete(id: number): Promise<void> {

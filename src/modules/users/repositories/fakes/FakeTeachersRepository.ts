@@ -1,13 +1,30 @@
 import ICreateTeacherDTO from '@modules/users/dtos/ICreateTeacherDTO';
 import Teacher from '@modules/users/infra/typeorm/entities/Teacher';
 import User from '@modules/users/infra/typeorm/entities/User';
+import Pagination from '@shared/dtos/Pagination';
 import ITeachersRepository from '../ITeachersRepository';
 
 class FakeTeachersRepository implements ITeachersRepository {
   private teachers: Teacher[] = [];
 
-  public async listAll(): Promise<Teacher[]> {
-    return this.teachers;
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    if (!query) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
+    return {
+      data: this.teachers,
+      total: this.teachers.length,
+    };
+  }
+
+  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
+    return {
+      data: this.teachers.find(teacher => teacher.user.name === name),
+      total: this.teachers.length,
+    };
   }
 
   public async findById(id: number): Promise<Teacher | undefined> {

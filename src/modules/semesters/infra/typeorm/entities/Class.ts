@@ -7,7 +7,9 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
+import Attendance from './Attendance';
 import Semester from './Semester';
 
 @Entity('classes')
@@ -15,10 +17,10 @@ class Class {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'start_hour' })
   startHour: Date;
 
-  @Column()
+  @Column({ name: 'end_hour' })
   endHour: Date;
 
   @Column()
@@ -31,6 +33,9 @@ class Class {
   @ManyToOne(() => Semester)
   @JoinColumn({ name: 'semester_id' })
   semester: Semester;
+
+  @OneToMany(() => Attendance, attendance => attendance.class)
+  attendances: Attendance[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

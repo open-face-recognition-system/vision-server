@@ -26,6 +26,9 @@ class Student {
   @OneToMany(() => Photo, photo => photo.student)
   photos: Photo[];
 
+  @Column({ name: 'signed_term' })
+  signedTerm: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

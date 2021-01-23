@@ -1,9 +1,11 @@
+import Pagination from '@shared/dtos/Pagination';
 import ICreateTeacherDTO from '../dtos/ICreateTeacherDTO';
 import Teacher from '../infra/typeorm/entities/Teacher';
 import User from '../infra/typeorm/entities/User';
 
 export default interface ITeachersRepository {
-  listAll(): Promise<Teacher[]>;
+  findAllWithPagination(query: any): Promise<Pagination>;
+  findAllWithPaginationByName(name: string): Promise<Pagination>;
   findById(id: number): Promise<Teacher | undefined>;
   findByUser(user: User): Promise<Teacher | undefined>;
   findByEnrollment(enrollment: string): Promise<Teacher | undefined>;

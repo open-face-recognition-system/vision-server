@@ -1,8 +1,8 @@
 import ICreateClassDTO from '@modules/semesters/dtos/ICreateClassDTO';
 import ISaveClassDTO from '@modules/semesters/dtos/ISaveClassDTO';
 import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
+import Pagination from '@shared/dtos/Pagination';
 import { getRepository, Repository } from 'typeorm';
-import { PaginationAwareObject } from 'typeorm-pagination/dist/helpers/pagination';
 import Class from '../entities/Class';
 
 class ClassesRepository implements IClassesRepository {
@@ -12,19 +12,79 @@ class ClassesRepository implements IClassesRepository {
     this.ormRepository = getRepository(Class);
   }
 
-  public async findAllWithPagination(): Promise<PaginationAwareObject> {
-    const classes = await this.ormRepository
-      .createQueryBuilder('classes')
-      .paginate();
+  public async findAllWithPagination(query: any): Promise<Pagination> {
+    const classes = await this.ormRepository.find({
+      ...query,
+      relations: ['subject', 'semester'],
+    });
 
-    return classes;
+    const count = await this.ormRepository.count();
+    return {
+      total: count,
+      data: classes || [],
+    };
   }
 
   public async findById(id: number): Promise<Class | undefined> {
     const findClass = await this.ormRepository.findOne({
       where: { id },
+      relations: [
+        'subject',
+        'subject.students',
+        'subject.students.student',
+        'subject.students.student.user',
+        'semester',
+        'attendances',
+        'attendances.student',
+      ],
     });
     return findClass;
+  }
+
+  public async findAllByTeacherId(teacherId: number): Promise<Class[]> {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+
+    const classes = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where('teacher.id = :teacherId', { teacherId })
+      .andWhere('class.date BETWEEN :startDate AND :endDate', {
+        startDate: start as any,
+        endDate: end as any,
+      })
+      .orderBy('class.startHour', 'ASC')
+      .getMany();
+    return classes;
+  }
+
+  public async findAllByTeacherIdWithPagination(
+    teacherId: number,
+    { where }: any,
+  ): Promise<Pagination> {
+    const classes = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getMany();
+
+    const count = await this.ormRepository
+      .createQueryBuilder('class')
+      .innerJoinAndSelect('class.subject', 'subject')
+      .innerJoinAndSelect('subject.teacher', 'teacher')
+      .where(where)
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getCount();
+
+    return {
+      total: count,
+      data: classes || [],
+    };
   }
 
   public async create({

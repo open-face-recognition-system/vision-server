@@ -6,7 +6,7 @@ import { container } from 'tsyringe';
 class SubjectsController {
   public async list(request: Request, response: Response): Promise<Response> {
     const subjectsService = container.resolve(SubjectsService);
-    const semesters = await subjectsService.listSubjects();
+    const semesters = await subjectsService.listSubjects(request.query);
     return response.json(classToClass(semesters));
   }
 
@@ -52,7 +52,7 @@ class SubjectsController {
     const { id } = request.params;
 
     const subjectsService = container.resolve(SubjectsService);
-    await subjectsService.deleteDemester(Number(id));
+    await subjectsService.deleteSubject(Number(id));
 
     return response.status(204).json();
   }

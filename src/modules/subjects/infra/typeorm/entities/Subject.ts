@@ -32,7 +32,7 @@ class Subject {
 
   @ManyToOne(() => RecognitionFile)
   @JoinColumn({ name: 'recognition_file_id' })
-  recognitionFile: RecognitionFile;
+  recognitionFile?: RecognitionFile;
 
   @OneToMany(() => SubjectStudent, subjectStudent => subjectStudent.subject)
   students: SubjectStudent[];

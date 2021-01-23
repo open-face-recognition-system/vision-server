@@ -21,6 +21,11 @@
   ],
   "rules": {
     "no-underscore-dangle": "off",
+    "no-plusplus": "off",
+    "no-param-reassign": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-unused-var": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "prettier/prettier": "error",
     "class-methods-use-this": "off",
     "@typescript-eslint/camelcase": "off",
