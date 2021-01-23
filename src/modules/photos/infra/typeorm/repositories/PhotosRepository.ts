@@ -12,7 +12,7 @@ class PhotosRepository implements IPhotosRepository {
     this.ormRepository = getRepository(Photo);
   }
 
-  public async listByStudentId(studentId: number): Promise<Photo[]> {
+  public async findByStudentId(studentId: number): Promise<Photo[]> {
     const photos = await this.ormRepository.find({
       where: { student: studentId },
     });
@@ -24,7 +24,7 @@ class PhotosRepository implements IPhotosRepository {
     return photo;
   }
 
-  public async listByPhotoType(
+  public async findByPhotoType(
     studentId: number,
     photoType: PhotoType,
   ): Promise<Photo[]> {

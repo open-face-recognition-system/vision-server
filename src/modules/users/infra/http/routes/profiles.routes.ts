@@ -9,6 +9,7 @@ const studentProfileController = new StudentProfileController();
 const teacherProfileController = new TeacherProfileController();
 
 profilesRouter.get('/', studentProfileController.show);
+
 profilesRouter.put(
   '/:id/student',
   celebrate({
@@ -34,6 +35,19 @@ profilesRouter.put(
     },
   }),
   teacherProfileController.update,
+);
+profilesRouter.put(
+  '/student',
+  celebrate({
+    [Segments.BODY]: {
+      name: Joi.string().required(),
+      email: Joi.string().required(),
+      oldPassword: Joi.string(),
+      password: Joi.string(),
+      passwordConfirmation: Joi.string().valid(Joi.ref('password')),
+    },
+  }),
+  studentProfileController.update,
 );
 
 export default profilesRouter;

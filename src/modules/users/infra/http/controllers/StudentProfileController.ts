@@ -16,16 +16,20 @@ class StudentProfileController {
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
+    const userId = request.user.id;
     const { id } = request.params;
     const { name, email, oldPassword, password } = request.body;
 
     const updateProfile = container.resolve(UpdateProfileService);
-    const user = await updateProfile.updateStudentProfile(Number(id), {
-      name,
-      email,
-      password,
-      oldPassword,
-    });
+    const user = await updateProfile.updateStudentProfile(
+      id ? Number(id) : userId,
+      {
+        name,
+        email,
+        password,
+        oldPassword,
+      },
+    );
 
     return response.json(classToClass(user));
   }

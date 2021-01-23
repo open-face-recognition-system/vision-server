@@ -68,6 +68,7 @@ class StudentsRepository implements IStudentsRepository {
     const student = this.ormRepository.create({
       enrollment,
       user,
+      signedTerm: true,
     });
     await this.ormRepository.save(student);
     return student;
