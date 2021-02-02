@@ -87,8 +87,6 @@ class RecognitionService {
       throw new AppError('Subject does not exists');
     }
 
-    console.log(subject);
-
     const { students } = subject;
 
     if (subject.students.length <= 1) {
