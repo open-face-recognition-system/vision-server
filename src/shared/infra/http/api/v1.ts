@@ -40,11 +40,10 @@ v1Router.use('/subjects', subjectsRouter);
 v1Router.use('/classes', classesRouter);
 v1Router.use('/recognition', recognitionRouter);
 v1Router.use('/attendances', attendancesRouter);
+v1Router.use('/semesters', semestersRouter);
 
 v1Router.use((request: Request, response: Response, next: NextFunction) => {
   ensureAuthenticated(['admin'], request, response, next);
 });
-
-v1Router.use('/semesters', semestersRouter);
 
 export default v1Router;

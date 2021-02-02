@@ -10,7 +10,7 @@ class FakeTeachersRepository implements ITeachersRepository {
   public async findAllWithPagination(query: any): Promise<Pagination> {
     if (!query) {
       return {
-        data: [],
+        data: this.teachers,
         total: 0,
       };
     }
@@ -22,7 +22,7 @@ class FakeTeachersRepository implements ITeachersRepository {
 
   public async findAllWithPaginationByName(name: string): Promise<Pagination> {
     return {
-      data: this.teachers.find(teacher => teacher.user.name === name),
+      data: this.teachers.filter(teacher => teacher.user.name === name),
       total: this.teachers.length,
     };
   }

@@ -21,9 +21,9 @@ class UpdateProfileService {
 
   private studentRepository: IStudentsRepository;
 
-  private hashProvider: IHashProvider;
-
   private teachersRepository: ITeachersRepository;
+
+  private hashProvider: IHashProvider;
 
   constructor(
     @inject('UsersRepository')

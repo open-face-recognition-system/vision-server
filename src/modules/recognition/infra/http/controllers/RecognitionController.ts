@@ -4,6 +4,7 @@ import RecognitionService from '@modules/recognition/services/RecognitionService
 
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
+import { classToClass } from 'class-transformer';
 
 class RecognizeController {
   public async recognize(
@@ -21,7 +22,7 @@ class RecognizeController {
       filePath,
     });
 
-    return response.status(200).json(student);
+    return response.status(200).json(classToClass(student));
   }
 
   public async training(

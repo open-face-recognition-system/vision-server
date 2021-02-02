@@ -26,12 +26,12 @@ class FakeSubjectsRepository implements ISubjectsRepository {
   ): Promise<Pagination> {
     if (!query) {
       return {
-        data: [],
-        total: 0,
+        data: this.subjects.filter(subject => subject.teacher.id === teacherId),
+        total: this.subjects.length,
       };
     }
     return {
-      data: this.subjects.find(subject => subject.teacher.id === teacherId),
+      data: this.subjects.filter(subject => subject.teacher.id === teacherId),
       total: this.subjects.length,
     };
   }

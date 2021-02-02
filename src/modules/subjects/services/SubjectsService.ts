@@ -57,21 +57,21 @@ class SubjectsService {
     subjectsStudentsRepository: ISubjectsStudentsRepository,
     @inject('TeachersRepository')
     teachersRepository: ITeachersRepository,
-    @inject('StorageProvider')
-    storageProvider: IStorageProvider,
-    @inject('HashProvider')
-    hashProvider: IHashProvider,
     @inject('QueryBuilderProvider')
     queryBuilderProvider: IQueryBuilderProvider,
+    @inject('HashProvider')
+    hashProvider: IHashProvider,
+    @inject('StorageProvider')
+    storageProvider: IStorageProvider,
   ) {
     this.subjectsRepository = subjectsRepository;
     this.studentsRepository = studentsRepository;
     this.usersRepository = usersRepository;
     this.subjectsStudentsRepository = subjectsStudentsRepository;
     this.teachersRepository = teachersRepository;
-    this.storageProvider = storageProvider;
-    this.hashProvider = hashProvider;
     this.queryBuilderProvider = queryBuilderProvider;
+    this.hashProvider = hashProvider;
+    this.storageProvider = storageProvider;
   }
 
   public async listSubjects(query: any): Promise<Pagination> {

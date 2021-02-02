@@ -16,13 +16,13 @@ interface UpdateDefaultUser {
 
 @injectable()
 class DefaultUserService {
+  private usersRepository: IUsersRepository;
+
   private studentsRepository: IStudentsRepository;
 
   private teachersRepository: ITeachersRepository;
 
   private queryBuilderProvider: IQueryBuilderProvider;
-
-  private usersRepository: IUsersRepository;
 
   constructor(
     @inject('UsersRepository')
@@ -34,10 +34,10 @@ class DefaultUserService {
     @inject('QueryBuilderProvider')
     queryBuilderProvider: IQueryBuilderProvider,
   ) {
+    this.usersRepository = usersRepository;
     this.studentsRepository = studentsRepository;
     this.teachersRepository = teachersRepository;
     this.queryBuilderProvider = queryBuilderProvider;
-    this.usersRepository = usersRepository;
   }
 
   public async findStudentById(studentId: number): Promise<Student> {
@@ -86,21 +86,6 @@ class DefaultUserService {
     return teachers;
   }
 
-  public async updateTeacher(id: number, { name, email }: UpdateDefaultUser) {
-    const teacher = await this.teachersRepository.findById(id);
-
-    if (!teacher) {
-      throw new AppError('Teacher not found');
-    }
-
-    const { user } = teacher;
-
-    user.email = email;
-    user.name = name;
-
-    return this.usersRepository.save(user);
-  }
-
   public async updateStudent(id: number, { name, email }: UpdateDefaultUser) {
     const student = await this.studentsRepository.findById(id);
 
@@ -109,6 +94,21 @@ class DefaultUserService {
     }
 
     const { user } = student;
+
+    user.email = email;
+    user.name = name;
+
+    return this.usersRepository.save(user);
+  }
+
+  public async updateTeacher(id: number, { name, email }: UpdateDefaultUser) {
+    const teacher = await this.teachersRepository.findById(id);
+
+    if (!teacher) {
+      throw new AppError('Teacher not found');
+    }
+
+    const { user } = teacher;
 
     user.email = email;
     user.name = name;

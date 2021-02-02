@@ -53,10 +53,8 @@ class Training {
   }
 
   private async getAllStudentsAndDownloadPhotos() {
-    const students = await this.studentsRepository.findAll();
-    const validStudents = students.filter(
-      student => student.photos.length === 30,
-    );
+    const { data } = await this.studentsRepository.findAllWithPagination({});
+    const validStudents = data.filter(student => student.photos.length === 30);
 
     const validStudetnsPromise = validStudents.map(async validStudent => {
       const { photos } = validStudent;
