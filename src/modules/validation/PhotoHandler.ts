@@ -142,7 +142,6 @@ class PhotoHandler {
   }
 
   public async addedTwentyFiveSet(): Promise<void> {
-    console.log('Baixando conjunto de 25 fotos');
     const normalPhotos = this.normalPhotos.slice(0, 6);
     const smilingPhotos = this.smilingPhotos.slice(0, 6);
     const closedEyesPhotos = this.closedEyesPhotos.slice(0, 6);

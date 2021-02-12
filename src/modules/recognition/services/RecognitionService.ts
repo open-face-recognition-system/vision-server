@@ -203,8 +203,6 @@ class RecognitionService {
       throw new AppError('Student does not exists');
     }
 
-    console.log(`${student.user.name} - ${Number(confidence)}`);
-
     const attendances = await this.attendancesRepository.findAllByClassId(
       classId,
     );

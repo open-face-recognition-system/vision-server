@@ -111,21 +111,26 @@ class SubjectsService {
     return subject;
   }
 
-  public async createAndEnrollStudentsByPdf(id: number, filename: string) {
+  public getPdfPath(filename: string) {
+    return `${uploadConfig.tmpFolder}/${filename}`;
+  }
+
+  public async createAndEnrollStudentsByPdf(
+    id: number,
+    filename: string,
+  ): Promise<Student[]> {
     const subject = await this.subjectsRepository.findById(id);
 
     if (!subject) {
       throw new AppError('Subject does not exists');
     }
 
-    const pdfPath = `${uploadConfig.tmpFolder}/${filename}`;
-
     const pdfParser = new PDFParser();
 
     const students: StudentAux[] = [];
     const enrolledStudents: Student[] = [];
 
-    pdfParser.loadPDF(pdfPath);
+    pdfParser.loadPDF(this.getPdfPath(filename));
 
     return new Promise(resolve => {
       pdfParser.on('pdfParser_dataReady', async (pdfData: any) => {
@@ -138,21 +143,19 @@ class SubjectsService {
             if (i === nextInfo && i + 5 < texts.length) {
               const name = this.formatName(texts[i].R[0].T);
 
-              if (!this.hasNumbers(name)) {
-                const enrollment = texts[i + 1].R[0].T;
-                let email = this.formatEmail(texts[i + 4].R[0].T);
-                if (!this.hasNumbers(texts[i + 5].R[0].T)) {
-                  email += texts[i + 5]?.R[0].T;
-                  nextInfo = i + 7;
-                } else {
-                  nextInfo = i + 6;
-                }
-                students.push({
-                  name,
-                  email,
-                  enrollment,
-                });
+              const enrollment = texts[i + 1].R[0].T;
+              let email = this.formatEmail(texts[i + 4].R[0].T);
+              if (!this.hasNumbers(texts[i + 5].R[0].T)) {
+                email += texts[i + 5].R[0].T;
+                nextInfo = i + 7;
+              } else {
+                nextInfo = i + 6;
               }
+              students.push({
+                name,
+                email,
+                enrollment,
+              });
             }
           }
 
@@ -179,7 +182,7 @@ class SubjectsService {
   }
 
   private formatName(nameToFormat: string): string {
-    return nameToFormat.split('%20').join(' ');
+    return decodeURIComponent(nameToFormat.split('%20').join(' '));
   }
 
   private formatEmail(emailToFormat: string): string {
