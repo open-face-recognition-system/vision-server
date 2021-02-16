@@ -6,9 +6,8 @@ width, height = 220, 220
 
 path = sys.argv[1]
 fileName = sys.argv[2]
-mainFolder = sys.argv[3]
 
-recognizer.read(mainFolder + "/shared/files/subject-" + fileName + ".yml")
+recognizer.read("./classifiers/subject-" + fileName + ".yml")
 
 gray_image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY)
 face_image = cv2.resize(gray_image, (width, height))

@@ -14,7 +14,7 @@ class FakeSubjectsStudentsRepository implements ISubjectsStudentsRepository {
   ): Promise<SubjectStudent | undefined> {
     const subjectStudents = this.subjectStudents.find(
       subjectStudent =>
-        subjectStudent.id === student.id &&
+        subjectStudent.student.id === student.id &&
         subjectStudent.subject.id === subject.id,
     );
     return subjectStudents;

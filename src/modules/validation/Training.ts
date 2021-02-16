@@ -32,8 +32,6 @@ class Training {
       student.photos.forEach(photo => {
         const filePath = path.join(tmpFolder, photo.path);
         if (fs.existsSync(filePath)) {
-          console.log(filePath);
-
           photos.push(filePath);
           ids.push(student.id);
         }

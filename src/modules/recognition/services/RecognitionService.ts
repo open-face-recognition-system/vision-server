@@ -193,7 +193,9 @@ class RecognitionService {
 
     const [studentId, confidence] = response.split(',');
 
-    if (Number(confidence) > 100) {
+    console.log(confidence);
+
+    if (Number(confidence) > 65) {
       throw new AppError('Aluno não reconhecido');
     }
 
@@ -202,8 +204,6 @@ class RecognitionService {
     if (!student) {
       throw new AppError('Student does not exists');
     }
-
-    console.log(`${student.user.name} - ${Number(confidence)}`);
 
     const attendances = await this.attendancesRepository.findAllByClassId(
       classId,

@@ -5,6 +5,8 @@ import IStorageProvider from '../models/IStorageProvider';
 
 class RecognitionFileStorageProvider implements IStorageProvider {
   public async saveFile(file: string): Promise<string> {
+    console.log(file);
+
     await fs.promises.rename(
       path.resolve(uploadConfig.tmpFolder, file),
       path.resolve(uploadConfig.recognitionFilesFolder, file),

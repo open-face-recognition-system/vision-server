@@ -7,10 +7,9 @@ class LBPHProvider implements IRecognitionProvider {
     photosPath: string[],
     subjectId: number,
   ): Promise<string> {
-    const mainFolder = process.env.RECOGNITION_CONTEXT;
-    const trainingPaht = `./${mainFolder}/shared/infra/opencv/training/lbph.py`;
+    const trainingPath = `opencv/training/lbph.py`;
     const pythonProcess = spawnSync('python', [
-      trainingPaht,
+      trainingPath,
       JSON.stringify(ids),
       JSON.stringify(photosPath),
       String(subjectId),
@@ -20,8 +19,7 @@ class LBPHProvider implements IRecognitionProvider {
   }
 
   public async recognize(id: number, photoPath: string): Promise<string> {
-    const mainFolder = process.env.RECOGNITION_CONTEXT;
-    const recognizePath = `./${mainFolder}/shared/infra/opencv/recognize/lbph.py`;
+    const recognizePath = `opencv/recognize/lbph.py`;
     const pythonProcess = spawnSync('python', [
       recognizePath,
       photoPath,
