@@ -193,7 +193,9 @@ class RecognitionService {
 
     const [studentId, confidence] = response.split(',');
 
-    if (Number(confidence) > 100) {
+    console.log(confidence);
+
+    if (Number(confidence) > 65) {
       throw new AppError('Aluno não reconhecido');
     }
 
