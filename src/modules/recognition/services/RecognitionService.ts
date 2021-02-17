@@ -99,7 +99,7 @@ class RecognitionService {
     const studentsPromise = students.map(async subjectStudent => {
       const { photos } = subjectStudent.student;
 
-      if (photos.length === 0) {
+      if (photos.length === 0 && subjectStudent.isEnrolled) {
         throw new AppError('Student needs at least one photo');
       }
 
@@ -143,9 +143,11 @@ class RecognitionService {
     const ids: number[] = [];
     const photosPath: string[] = [];
     photos.map(async photo => {
-      const photoPath = path.resolve(uploadConfig.tmpFolder, photo.path);
-      photosPath.push(photoPath);
-      ids.push(subjectStudent.student.id);
+      if (subjectStudent.isEnrolled) {
+        const photoPath = path.resolve(uploadConfig.tmpFolder, photo.path);
+        photosPath.push(photoPath);
+        ids.push(subjectStudent.student.id);
+      }
     });
     return {
       ids,
