@@ -7,6 +7,10 @@ interface FakeTrainingData {
 }
 
 class FakeRecognitionProvider implements IRecognitionProvider {
+  public async update(id: number, photoPath: string): Promise<string> {
+    return `${id}-${photoPath}`;
+  }
+
   private traningData: FakeTrainingData[] = [];
 
   public async training(

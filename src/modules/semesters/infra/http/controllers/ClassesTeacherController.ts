@@ -14,6 +14,17 @@ class ClassesTeacherController {
     );
     return response.json(classToClass(classes));
   }
+
+  public async listMobile(
+    request: Request,
+    response: Response,
+  ): Promise<Response> {
+    const userId = request.user.id;
+    console.log(userId);
+    const classesService = container.resolve(ClassesService);
+    const classes = await classesService.listAllByTeacherForMobile(userId);
+    return response.json(classToClass(classes));
+  }
 }
 
 export default ClassesTeacherController;

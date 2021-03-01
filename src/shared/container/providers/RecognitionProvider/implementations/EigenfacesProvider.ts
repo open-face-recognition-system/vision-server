@@ -21,6 +21,10 @@ class EigenfacesProvider implements IRecognitionProvider {
 
     return pythonProcess.toString();
   }
+
+  public async update(id: number, photoPath: string): Promise<string> {
+    throw new Error(`${id}${photoPath}Method not implemented.`);
+  }
 }
 
 export default EigenfacesProvider;

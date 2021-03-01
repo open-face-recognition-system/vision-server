@@ -16,4 +16,9 @@ recognitionRouter.post(
 
 recognitionRouter.post('/training/:subjectId', recognitionController.training);
 
+recognitionRouter.post(
+  '/update/:classId/student/:studentId',
+  upload.single('file'),
+  recognitionController.update,
+);
 export default recognitionRouter;

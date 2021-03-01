@@ -19,6 +19,12 @@ interface IRequest {
   subjectId: number;
 }
 
+interface IUpdateRequest {
+  studentId: number;
+  classId: number;
+  filePath: string;
+}
+
 interface IRecognizeRequest {
   classId: number;
   filePath: string;
@@ -26,6 +32,7 @@ interface IRecognizeRequest {
 
 interface IRecognizeResponse {
   student: Student;
+  attendanceId: number;
   confidence: number;
 }
 
@@ -195,9 +202,7 @@ class RecognitionService {
 
     const [studentId, confidence] = response.split(',');
 
-    console.log(confidence);
-
-    if (Number(confidence) > 65) {
+    if (Number(confidence) > 70) {
       throw new AppError('Aluno não reconhecido');
     }
 
@@ -215,6 +220,10 @@ class RecognitionService {
       attendance => attendance.student.id === student.id,
     );
 
+    if (!findAttendance) {
+      throw new AppError('Aluno não existe na lista de chamada');
+    }
+
     if (findAttendance) {
       this.attendancesRepository.save({
         id: findAttendance.id,
@@ -224,7 +233,36 @@ class RecognitionService {
       });
     }
 
-    return { student, confidence: Number(confidence) };
+    return {
+      student,
+      confidence: Number(confidence),
+      attendanceId: findAttendance.id,
+    };
+  }
+
+  public async update({ studentId, classId, filePath }: IUpdateRequest) {
+    const student = await this.studentsRepository.findById(studentId);
+
+    if (!student) {
+      throw new AppError('Aluno não encontrado');
+    }
+
+    const classExists = await this.classesRepository.findById(classId);
+
+    if (!classExists) {
+      throw new AppError('Class does not exists');
+    }
+
+    const { subject } = classExists;
+
+    const fileName = await this.recognitionProvider.update(
+      studentId,
+      filePath,
+      subject.id,
+    );
+
+    await this.deleteTmpFile();
+    return fileName;
   }
 }
 

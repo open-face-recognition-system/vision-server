@@ -38,6 +38,22 @@ class RecognizeController {
 
     return response.status(204).json();
   }
+
+  public async update(request: Request, response: Response): Promise<Response> {
+    const { studentId, classId } = request.params;
+    const { filename: file } = request.file;
+
+    const filePath = path.join(uploadConfig.tmpFolder, file);
+
+    const subjectsService = container.resolve(RecognitionService);
+    await subjectsService.update({
+      studentId: Number(studentId),
+      classId: Number(classId),
+      filePath,
+    });
+
+    return response.status(204).json();
+  }
 }
 
 export default RecognizeController;

@@ -36,6 +36,10 @@ classesRouter.put(
   classesController.update,
 );
 classesRouter.delete('/:id', classesController.delete);
+classesRouter.get(
+  '/teacher/classes/mobile',
+  classesTeacherController.listMobile,
+);
 classesRouter.get('/teacher/:teacherId', classesTeacherController.list);
 
 export default classesRouter;

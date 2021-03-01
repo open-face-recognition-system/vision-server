@@ -20,6 +20,10 @@ class FisherfacesProvider implements IRecognitionProvider {
     const pythonProcess = spawnSync('python', [photoPath, String(id)]).stdout;
     return pythonProcess.toString();
   }
+
+  public async update(id: number, photoPath: string): Promise<string> {
+    throw new Error(`${id}${photoPath}Method not implemented.`);
+  }
 }
 
 export default FisherfacesProvider;
