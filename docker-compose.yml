@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:13
+    container_name: face_recognizer_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: face_recognizer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  app:
+    build: .
+    container_name: face_recognizer_api
+    depends_on:
+      - postgres
+    ports:
+      - "3333:3333"
+    volumes:
+      - .:/app
+    networks:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - APP_SECRET=myappsecret
+      - APP_URL=http://localhost:3333
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - DB_NAME=face_recognizer
+      - STORAGE_DRIVER=disk
+      - RECOGNITION_DRIVER=lbph
+
+volumes:
+  pgdata:
+
+networks:
+  backend:

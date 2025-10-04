@@ -21,7 +21,9 @@ Icon
 
 # Tmp folder
 tmp/*
-*.yml
+
+# YAML configs
+opencv/**/*.yml
 
 # Orm config
 ormconfig.json
