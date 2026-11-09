@@ -175,7 +175,7 @@ describe('Authenticate User', () => {
   });
 
   it('should not be able to authenticate with non existing user', async () => {
-    expect(
+    await expect(
       authenticateUser.signIn({
         email: 'johndoe@example.com',
         password: '123123',
@@ -200,13 +200,13 @@ describe('Authenticate User', () => {
   });
 
   it('should not be able to refresh token with non existing token', async () => {
-    expect(
+    await expect(
       authenticateUser.refreshToken('invalidRefreshToken'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should not be able to refresh token with non existing token', async () => {
-    expect(
+    await expect(
       authenticateUser.refreshToken('07aeb8e6-e1b2-4115-bec4-04b9e13a925a'),
     ).rejects.toBeInstanceOf(AppError);
   });

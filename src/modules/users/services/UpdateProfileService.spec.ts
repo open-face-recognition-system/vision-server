@@ -80,7 +80,7 @@ describe('Update Profile Service', () => {
   });
 
   it('should not be able to update teacher`s profile if teacher does not exists', async () => {
-    expect(
+    await expect(
       updateProfileService.updateTeacherProfile(0, {
         name: 'New name',
         email: 'newemail@test.com',
@@ -103,7 +103,7 @@ describe('Update Profile Service', () => {
       user,
     });
 
-    expect(
+    await expect(
       updateProfileService.updateTeacherProfile(teacher.id, {
         name: 'New name',
         email: 'newemail@test.com',
@@ -125,7 +125,7 @@ describe('Update Profile Service', () => {
       user,
     });
 
-    expect(
+    await expect(
       updateProfileService.updateTeacherProfile(teacher.id, {
         name: 'New name',
         email: 'newemail@test.com',
@@ -186,7 +186,7 @@ describe('Update Profile Service', () => {
   });
 
   it('should not be able to update student`s profile if student does not exists', async () => {
-    expect(
+    await expect(
       updateProfileService.updateStudentProfile(0, {
         name: 'New name',
         email: 'newemail@test.com',
@@ -209,7 +209,7 @@ describe('Update Profile Service', () => {
       user,
     });
 
-    expect(
+    await expect(
       updateProfileService.updateStudentProfile(student.id, {
         name: 'New name',
         email: 'newemail@test.com',
@@ -231,7 +231,7 @@ describe('Update Profile Service', () => {
       user,
     });
 
-    expect(
+    await expect(
       updateProfileService.updateStudentProfile(student.id, {
         name: 'New name',
         email: 'newemail@test.com',
