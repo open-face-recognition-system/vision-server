@@ -76,6 +76,8 @@ expect_status 400 -H "Authorization: Bearer $TEACHER" -F "file=@$WORK/face-2-5.j
 expect_status 204 -X POST -H "Authorization: Bearer $TEACHER" "$API/recognition/training/$SUBJECT_ID" >/dev/null
 RECOGNIZED=$(expect_status 200 -H "Authorization: Bearer $TEACHER" -F "file=@$WORK/face-2-5.jpg" "$API/recognition/recognize/$CLASS_ID")
 [ "$(echo "$RECOGNIZED" | jq -r .student.id)" = "${STUDENT_ID[2]}" ] || fail "recognized the wrong student: $RECOGNIZED"
+MINE=$(expect_status 200 -H "Authorization: Bearer $TEACHER" "$API/subjects/teacher" | jq -c ".data[] | select(.id == $SUBJECT_ID) | {trained: (.recognitionFile != null), teacher: .teacher.user.name}")
+[ "$MINE" = '{"trained":true,"teacher":"Teacher"}' ] || fail "teacher subject list misses training or teacher: $MINE"
 PRESENT=$(expect_status 200 -H "Content-Type: application/json" -H "Authorization: Bearer $TEACHER" "$API/attendances/class/$CLASS_ID" | jq -c "[.[] | select(.isPresent)] | map(.student.id)")
 [ "$PRESENT" = "[${STUDENT_ID[2]}]" ] || fail "attendance not recorded: $PRESENT"
 expect_status 204 -H "Authorization: Bearer $TEACHER" -F "file=@$WORK/face-1-5.jpg" "$API/recognition/update/$CLASS_ID/student/${STUDENT_ID[1]}" >/dev/null

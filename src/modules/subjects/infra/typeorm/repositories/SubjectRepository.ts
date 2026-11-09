@@ -43,6 +43,8 @@ class SubjectsRepository implements ISubjectsRepository {
     const [data, total] = await this.ormRepository
       .createQueryBuilder('subject')
       .innerJoinAndSelect('subject.teacher', 'teacher')
+      .innerJoinAndSelect('teacher.user', 'user')
+      .leftJoinAndSelect('subject.recognitionFile', 'recognitionFile')
       .where('teacher.id = :teacherId', { teacherId })
       .skip(skip)
       .take(take)
