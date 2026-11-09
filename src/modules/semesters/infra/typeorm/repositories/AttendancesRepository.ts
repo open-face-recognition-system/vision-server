@@ -2,24 +2,21 @@ import ICreateAttendanceDTO from '@modules/semesters/dtos/ICreateAttendanceDTO';
 import ISaveAttendanceDTO from '@modules/semesters/dtos/ISaveAttendanceDTO';
 import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
 import Pagination from '@shared/dtos/Pagination';
-import { getRepository, Repository } from 'typeorm';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import Attendance from '../entities/Attendance';
 
 class AttendancesRepository implements IAttendancesRepository {
   private ormRepository: Repository<Attendance>;
 
   constructor() {
-    this.ormRepository = getRepository(Attendance);
+    this.ormRepository = dataSource.getRepository(Attendance);
   }
 
-  public async findAllWithPagination(query: any): Promise<Pagination> {
-    const attendances = await this.ormRepository.find(query);
-
-    const count = await this.ormRepository.count();
-    return {
-      total: count,
-      data: attendances || [],
-    };
+  public async findAllWithPagination(query: PageQuery): Promise<Pagination> {
+    const [data, total] = await this.ormRepository.findAndCount(query);
+    return { total, data };
   }
 
   public async findAllByClassId(classId: number): Promise<Attendance[]> {
@@ -37,9 +34,9 @@ class AttendancesRepository implements IAttendancesRepository {
   public async findById(id: number): Promise<Attendance | undefined> {
     const attendance = await this.ormRepository.findOne({
       where: { id },
-      relations: ['class', 'student', 'student.user'],
+      relations: { class: true, student: { user: true } },
     });
-    return attendance;
+    return attendance ?? undefined;
   }
 
   public async create({
@@ -53,7 +50,7 @@ class AttendancesRepository implements IAttendancesRepository {
       student,
     });
     await this.ormRepository.save(attendance);
-    return attendance;
+    return attendance ?? undefined;
   }
 
   public async delete(id: number): Promise<void> {

@@ -1,5 +1,5 @@
 import ClassesService from '@modules/semesters/services/ClassesService';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -12,7 +12,7 @@ class ClassesTeacherController {
       teacherId ? Number(teacherId) : userId,
       request.query,
     );
-    return response.json(classToClass(classes));
+    return response.json(instanceToInstance(classes));
   }
 
   public async listMobile(
@@ -23,7 +23,7 @@ class ClassesTeacherController {
     console.log(userId);
     const classesService = container.resolve(ClassesService);
     const classes = await classesService.listAllByTeacherForMobile(userId);
-    return response.json(classToClass(classes));
+    return response.json(instanceToInstance(classes));
   }
 }
 

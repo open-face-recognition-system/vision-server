@@ -7,6 +7,7 @@ import {
   Generated,
   ManyToOne,
   JoinColumn,
+  Relation,
 } from 'typeorm';
 import User from './User';
 
@@ -21,7 +22,7 @@ class UserToken {
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

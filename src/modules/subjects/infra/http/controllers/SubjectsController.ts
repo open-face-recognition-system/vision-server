@@ -1,5 +1,5 @@
 import SubjectsService from '@modules/subjects/services/SubjectsService';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -7,7 +7,7 @@ class SubjectsController {
   public async list(request: Request, response: Response): Promise<Response> {
     const subjectsService = container.resolve(SubjectsService);
     const semesters = await subjectsService.listSubjects(request.query);
-    return response.json(classToClass(semesters));
+    return response.json(instanceToInstance(semesters));
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
@@ -16,7 +16,7 @@ class SubjectsController {
     const subjectsService = container.resolve(SubjectsService);
     const semester = await subjectsService.showSubject(Number(id));
 
-    return response.json(classToClass(semester));
+    return response.json(instanceToInstance(semester));
   }
 
   public async create(request: Request, response: Response): Promise<Response> {
@@ -30,7 +30,7 @@ class SubjectsController {
       teacherId,
     });
 
-    return response.status(201).json(classToClass(semester));
+    return response.status(201).json(instanceToInstance(semester));
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
@@ -45,7 +45,7 @@ class SubjectsController {
       teacherId,
     });
 
-    return response.json(classToClass(semester));
+    return response.json(instanceToInstance(semester));
   }
 
   public async delete(request: Request, response: Response): Promise<Response> {

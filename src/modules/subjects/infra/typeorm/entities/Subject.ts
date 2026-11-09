@@ -9,6 +9,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Relation,
 } from 'typeorm';
 import SubjectStudent from './SubjectStudent';
 
@@ -28,14 +29,14 @@ class Subject {
 
   @ManyToOne(() => Teacher)
   @JoinColumn({ name: 'teacher_id' })
-  teacher: Teacher;
+  teacher: Relation<Teacher>;
 
   @ManyToOne(() => RecognitionFile)
   @JoinColumn({ name: 'recognition_file_id' })
-  recognitionFile?: RecognitionFile;
+  recognitionFile?: Relation<RecognitionFile>;
 
   @OneToMany(() => SubjectStudent, subjectStudent => subjectStudent.subject)
-  students: SubjectStudent[];
+  students: Relation<SubjectStudent>[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

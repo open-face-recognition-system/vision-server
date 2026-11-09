@@ -1,5 +1,6 @@
 import Photo from '@modules/photos/infra/typeorm/entities/Photo';
 import {
+  Entity,
   Column,
   CreateDateColumn,
   JoinColumn,
@@ -7,8 +8,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Relation,
 } from 'typeorm';
-import { Entity } from 'typeorm/decorator/entity/Entity';
 import User from './User';
 
 @Entity('students')
@@ -21,10 +22,10 @@ class Student {
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   @OneToMany(() => Photo, photo => photo.student)
-  photos: Photo[];
+  photos: Relation<Photo>[];
 
   @Column({ name: 'signed_term' })
   signedTerm: boolean;

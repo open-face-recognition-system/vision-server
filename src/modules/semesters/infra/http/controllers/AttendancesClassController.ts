@@ -1,5 +1,5 @@
 import AttendancesService from '@modules/semesters/services/AttendancesService';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -10,7 +10,7 @@ class AttendancesClassController {
     const attendances = await attendancesService.listAllByClass(
       Number(classId),
     );
-    return response.json(classToClass(attendances));
+    return response.json(instanceToInstance(attendances));
   }
 }
 

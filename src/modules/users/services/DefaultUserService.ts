@@ -64,9 +64,7 @@ class DefaultUserService {
     const built = this.queryBuilderProvider.buildQuery(query);
     let students = {} as Pagination;
     if (query.name) {
-      students = await this.studentsRepository.findAllWithPaginationByName(
-        query.name,
-      );
+      students = await this.studentsRepository.findAllWithPaginationByName(String(query.name), built);
     } else {
       students = await this.studentsRepository.findAllWithPagination(built);
     }
@@ -77,9 +75,7 @@ class DefaultUserService {
     const built = this.queryBuilderProvider.buildQuery(query);
     let teachers = {} as Pagination;
     if (query.name) {
-      teachers = await this.teachersRepository.findAllWithPaginationByName(
-        query.name,
-      );
+      teachers = await this.teachersRepository.findAllWithPaginationByName(String(query.name), built);
     } else {
       teachers = await this.teachersRepository.findAllWithPagination(built);
     }

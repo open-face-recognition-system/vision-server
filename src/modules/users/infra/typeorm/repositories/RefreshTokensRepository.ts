@@ -1,5 +1,6 @@
 import IRefreshTokensRepository from '@modules/users/repositories/IRefreshTokensRepository';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 
 import RefreshToken from '../entities/RefreshToken';
 import User from '../entities/User';
@@ -8,7 +9,7 @@ class RefreshTokensRepository implements IRefreshTokensRepository {
   private ormRepository: Repository<RefreshToken>;
 
   constructor() {
-    this.ormRepository = getRepository(RefreshToken);
+    this.ormRepository = dataSource.getRepository(RefreshToken);
   }
 
   public async generate(user: User): Promise<RefreshToken> {
@@ -26,18 +27,18 @@ class RefreshTokensRepository implements IRefreshTokensRepository {
   ): Promise<RefreshToken | undefined> {
     const findRefreshToken = await this.ormRepository.findOne({
       where: { refreshToken },
-      relations: ['user'],
+      relations: { user: true },
     });
 
-    return findRefreshToken;
+    return findRefreshToken ?? undefined;
   }
 
   public async findByUser(user: User): Promise<RefreshToken | undefined> {
     const findRefreshToken = await this.ormRepository.findOne({
-      where: { user },
+      where: { user: { id: user.id } },
     });
 
-    return findRefreshToken;
+    return findRefreshToken ?? undefined;
   }
 }
 

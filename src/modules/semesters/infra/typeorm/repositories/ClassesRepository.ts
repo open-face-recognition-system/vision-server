@@ -2,43 +2,36 @@ import ICreateClassDTO from '@modules/semesters/dtos/ICreateClassDTO';
 import ISaveClassDTO from '@modules/semesters/dtos/ISaveClassDTO';
 import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
 import Pagination from '@shared/dtos/Pagination';
-import { getRepository, Repository } from 'typeorm';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import Class from '../entities/Class';
 
 class ClassesRepository implements IClassesRepository {
   private ormRepository: Repository<Class>;
 
   constructor() {
-    this.ormRepository = getRepository(Class);
+    this.ormRepository = dataSource.getRepository(Class);
   }
 
-  public async findAllWithPagination(query: any): Promise<Pagination> {
-    const classes = await this.ormRepository.find({
+  public async findAllWithPagination(query: PageQuery): Promise<Pagination> {
+    const [data, total] = await this.ormRepository.findAndCount({
       ...query,
-      relations: ['subject', 'semester'],
+      relations: { subject: true, semester: true },
     });
-
-    const count = await this.ormRepository.count();
-    return {
-      total: count,
-      data: classes || [],
-    };
+    return { total, data };
   }
 
   public async findById(id: number): Promise<Class | undefined> {
     const findClass = await this.ormRepository.findOne({
       where: { id },
-      relations: [
-        'subject',
-        'subject.students',
-        'subject.students.student',
-        'subject.students.student.user',
-        'semester',
-        'attendances',
-        'attendances.student',
-      ],
+      relations: {
+        subject: { recognitionFile: true, students: { student: { user: true } } },
+        semester: true,
+        attendances: { student: true },
+      },
     });
-    return findClass;
+    return findClass ?? undefined;
   }
 
   public async findAllByTeacherId(teacherId: number): Promise<Class[]> {
@@ -63,28 +56,17 @@ class ClassesRepository implements IClassesRepository {
 
   public async findAllByTeacherIdWithPagination(
     teacherId: number,
-    { where }: any,
+    { skip, take }: PageQuery,
   ): Promise<Pagination> {
-    const classes = await this.ormRepository
+    const [data, total] = await this.ormRepository
       .createQueryBuilder('class')
       .innerJoinAndSelect('class.subject', 'subject')
       .innerJoinAndSelect('subject.teacher', 'teacher')
-      .where(where)
-      .andWhere('teacher.id = :teacherId', { teacherId })
-      .getMany();
-
-    const count = await this.ormRepository
-      .createQueryBuilder('class')
-      .innerJoinAndSelect('class.subject', 'subject')
-      .innerJoinAndSelect('subject.teacher', 'teacher')
-      .where(where)
-      .andWhere('teacher.id = :teacherId', { teacherId })
-      .getCount();
-
-    return {
-      total: count,
-      data: classes || [],
-    };
+      .where('teacher.id = :teacherId', { teacherId })
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+    return { total, data };
   }
 
   public async create({

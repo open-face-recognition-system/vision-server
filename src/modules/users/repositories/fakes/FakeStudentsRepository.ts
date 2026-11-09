@@ -1,4 +1,5 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import User from '@modules/users/infra/typeorm/entities/User';
 import Pagination from '@shared/dtos/Pagination';
@@ -20,7 +21,7 @@ class FakeStudentsRepository implements IStudentsRepository {
     };
   }
 
-  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
+  public async findAllWithPaginationByName(name: string, query: PageQuery): Promise<Pagination> {
     return {
       data: this.students.filter(student => student.user.name === name),
       total: this.students.length,

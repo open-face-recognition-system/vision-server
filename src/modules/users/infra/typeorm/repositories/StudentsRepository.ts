@@ -1,7 +1,9 @@
 import ICreateStudentDTO from '@modules/users/dtos/ICreateStudentDTO';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import Pagination from '@shared/dtos/Pagination';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
 import Student from '../entities/Student';
 import User from '../entities/User';
 
@@ -9,34 +11,34 @@ class StudentsRepository implements IStudentsRepository {
   private ormRepository: Repository<Student>;
 
   constructor() {
-    this.ormRepository = getRepository(Student);
+    this.ormRepository = dataSource.getRepository(Student);
   }
 
-  public async findAllWithPagination(query: any): Promise<Pagination> {
-    const students = await this.ormRepository.find({
+  public async findAllWithPagination(query: PageQuery): Promise<Pagination> {
+    const [data, total] = await this.ormRepository.findAndCount({
       ...query,
-      relations: ['user'],
+      relations: { user: true },
     });
-
-    const count = await this.ormRepository.count();
-    return {
-      total: count,
-      data: students || [],
-    };
+    return { total, data };
   }
 
-  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
-    const students = await this.ormRepository
+  public async findAllWithPaginationByName(
+    name: string,
+    { skip, take }: PageQuery,
+  ): Promise<Pagination> {
+    const [data, total] = await this.ormRepository
       .createQueryBuilder('student')
       .innerJoinAndSelect('student.user', 'user')
       .where('user.name ILIKE :name', { name: `%${name}%` })
-      .paginate();
-    return students;
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+    return { total, data };
   }
 
   public async findAll(): Promise<Student[]> {
     const students = await this.ormRepository.find({
-      relations: ['user', 'photos'],
+      relations: { user: true, photos: true },
     });
     return students;
   }
@@ -44,21 +46,21 @@ class StudentsRepository implements IStudentsRepository {
   public async findById(id: number): Promise<Student | undefined> {
     const student = await this.ormRepository.findOne({
       where: { id },
-      relations: ['user', 'photos'],
+      relations: { user: true, photos: true },
     });
-    return student;
+    return student ?? undefined;
   }
 
   public async findByUser(user: User): Promise<Student | undefined> {
-    const student = await this.ormRepository.findOne({ where: { user } });
-    return student;
+    const student = await this.ormRepository.findOne({ where: { user: { id: user.id } } });
+    return student ?? undefined;
   }
 
   public async findByEnrollment(
     enrollment: string,
   ): Promise<Student | undefined> {
     const student = await this.ormRepository.findOne({ where: { enrollment } });
-    return student;
+    return student ?? undefined;
   }
 
   public async create({
@@ -71,7 +73,7 @@ class StudentsRepository implements IStudentsRepository {
       signedTerm: true,
     });
     await this.ormRepository.save(student);
-    return student;
+    return student ?? undefined;
   }
 
   public async delete(id: number): Promise<void> {

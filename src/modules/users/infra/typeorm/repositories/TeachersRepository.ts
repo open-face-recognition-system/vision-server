@@ -1,7 +1,9 @@
 import ICreateTeacherDTO from '@modules/users/dtos/ICreateTeacherDTO';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
 import Pagination from '@shared/dtos/Pagination';
-import { getRepository, Repository } from 'typeorm';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import Teacher from '../entities/Teacher';
 import User from '../entities/User';
 
@@ -9,29 +11,29 @@ class TeachersRepository implements ITeachersRepository {
   private ormRepository: Repository<Teacher>;
 
   constructor() {
-    this.ormRepository = getRepository(Teacher);
+    this.ormRepository = dataSource.getRepository(Teacher);
   }
 
-  public async findAllWithPagination(query: any): Promise<Pagination> {
-    const teachers = await this.ormRepository.find({
+  public async findAllWithPagination(query: PageQuery): Promise<Pagination> {
+    const [data, total] = await this.ormRepository.findAndCount({
       ...query,
-      relations: ['user'],
+      relations: { user: true },
     });
-
-    const count = await this.ormRepository.count();
-    return {
-      total: count,
-      data: teachers || [],
-    };
+    return { total, data };
   }
 
-  public async findAllWithPaginationByName(name: string): Promise<Pagination> {
-    const teachers = await this.ormRepository
+  public async findAllWithPaginationByName(
+    name: string,
+    { skip, take }: PageQuery,
+  ): Promise<Pagination> {
+    const [data, total] = await this.ormRepository
       .createQueryBuilder('teacher')
       .innerJoinAndSelect('teacher.user', 'user')
       .where('user.name ILIKE :name', { name: `%${name}%` })
-      .paginate();
-    return teachers;
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+    return { total, data };
   }
 
   public async listAll(query: any): Promise<Teacher[]> {
@@ -42,21 +44,21 @@ class TeachersRepository implements ITeachersRepository {
   public async findById(id: number): Promise<Teacher | undefined> {
     const teacher = await this.ormRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: { user: true },
     });
-    return teacher;
+    return teacher ?? undefined;
   }
 
   public async findByUser(user: User): Promise<Teacher | undefined> {
-    const teacher = await this.ormRepository.findOne({ where: { user } });
-    return teacher;
+    const teacher = await this.ormRepository.findOne({ where: { user: { id: user.id } } });
+    return teacher ?? undefined;
   }
 
   public async findByEnrollment(
     enrollment: string,
   ): Promise<Teacher | undefined> {
     const teacher = await this.ormRepository.findOne({ where: { enrollment } });
-    return teacher;
+    return teacher ?? undefined;
   }
 
   public async create({
@@ -68,7 +70,7 @@ class TeachersRepository implements ITeachersRepository {
       user,
     });
     await this.ormRepository.save(teacher);
-    return teacher;
+    return teacher ?? undefined;
   }
 
   public async delete(id: number): Promise<void> {
