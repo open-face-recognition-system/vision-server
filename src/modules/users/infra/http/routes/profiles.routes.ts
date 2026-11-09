@@ -3,15 +3,17 @@ import { celebrate, Segments, Joi } from 'celebrate';
 
 import StudentProfileController from '../controllers/StudentProfileController';
 import TeacherProfileController from '../controllers/TeacherProfileController';
+import authorize from '@shared/infra/http/middlewares/authorize';
+import Role from '@modules/users/infra/typeorm/entities/Role';
 
 const profilesRouter = Router();
 const studentProfileController = new StudentProfileController();
 const teacherProfileController = new TeacherProfileController();
 
-profilesRouter.get('/', studentProfileController.show);
+profilesRouter.get('/', authorize(Role.STUDENT), studentProfileController.show);
 
 profilesRouter.put(
-  '/:id/student',
+  '/:id/student', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -24,7 +26,7 @@ profilesRouter.put(
   studentProfileController.update,
 );
 profilesRouter.put(
-  '/:id/teacher',
+  '/:id/teacher', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -37,7 +39,7 @@ profilesRouter.put(
   teacherProfileController.update,
 );
 profilesRouter.put(
-  '/student',
+  '/student', authorize(Role.STUDENT),
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),

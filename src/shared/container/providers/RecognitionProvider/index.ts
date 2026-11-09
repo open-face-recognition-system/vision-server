@@ -1,18 +1,9 @@
 import { container } from 'tsyringe';
-
 import recognitionConfig from '@config/recognition';
+
 import IRecognitionProvider from './models/IRecognitionProvider';
-import EigenfacesProvider from './implementations/EigenfacesProvider';
-import FisherfacesProvider from './implementations/FisherfacesProvider';
-import LBPHProvider from './implementations/LBPHProvider';
+import OpenCVRecognitionProvider from './implementations/OpenCVRecognitionProvider';
 
-const providers = {
-  eigenfaces: EigenfacesProvider,
-  fisherfaces: FisherfacesProvider,
-  lbph: LBPHProvider,
-};
+container.registerSingleton<IRecognitionProvider>('RecognitionProvider', OpenCVRecognitionProvider);
 
-container.registerSingleton<IRecognitionProvider>(
-  'RecognitionProvider',
-  providers[recognitionConfig.driver],
-);
+container.registerInstance('RecognitionThreshold', recognitionConfig.threshold);

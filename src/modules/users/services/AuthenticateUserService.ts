@@ -1,6 +1,5 @@
 import { injectable, inject } from 'tsyringe';
 import { sign } from 'jsonwebtoken';
-import { isUuid } from 'uuidv4';
 import authConfig from '@config/auth';
 
 import AppError from '@shared/errors/AppError';
@@ -12,6 +11,9 @@ import Role from '../infra/typeorm/entities/Role';
 import IStudentsRepository from '../repositories/IStudentsRepository';
 import ITeachersRepository from '../repositories/ITeachersRepository';
 import IRefreshTokensRepository from '../repositories/IRefreshTokensRepository';
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface ISignInRequest {
   email: string;
@@ -121,7 +123,7 @@ class AuthenticateUserService {
   public async refreshToken(
     refreshToken: string,
   ): Promise<IAuthenticateResponse> {
-    if (!isUuid(refreshToken)) {
+    if (!UUID_PATTERN.test(refreshToken)) {
       throw new AppError('Invalid refresh token.', 401);
     }
 

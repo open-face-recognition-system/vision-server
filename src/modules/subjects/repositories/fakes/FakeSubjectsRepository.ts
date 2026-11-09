@@ -58,25 +58,9 @@ class FakeSubjectsRepository implements ISubjectsRepository {
     this.subjects.splice(findIndex, 1);
   }
 
-  public async save({
-    id,
-    name,
-    course,
-    description,
-  }: ISaveSubjectDOT): Promise<Subject> {
-    const findIndex = this.subjects.findIndex(
-      findSubject => findSubject.id === id,
-    );
-
-    const updatedSubject = new Subject();
-
-    updatedSubject.id = id;
-    updatedSubject.name = name || 'name';
-    updatedSubject.course = course || 'course';
-    updatedSubject.description = description || 'description';
-    this.subjects[findIndex] = updatedSubject;
-
-    return updatedSubject;
+  public async save(subject: ISaveSubjectDOT): Promise<Subject> {
+    const saved = this.subjects.find(current => current.id === subject.id);
+    return Object.assign(saved ?? new Subject(), subject);
   }
 }
 

@@ -1,61 +1,46 @@
 import { injectable, inject } from 'tsyringe';
-
 import AppError from '@shared/errors/AppError';
-import Service from '@shared/core/Service';
 import IUsersRepository from '../repositories/IUsersRepository';
-import Teacher from '../infra/typeorm/entities/Teacher';
 import ITeachersRepository from '../repositories/ITeachersRepository';
+import IHashProvider from '../providers/HashProvider/models/IHashProvider';
+import Teacher from '../infra/typeorm/entities/Teacher';
 import Role from '../infra/typeorm/entities/Role';
 
 interface IRequest {
+  name: string;
+  email: string;
+  password: string;
   enrollment: string;
-  userId: number;
 }
 
 @injectable()
-class CreateTeacherService implements Service<IRequest, Teacher> {
-  private usersRepository: IUsersRepository;
-
-  private teachersRepository: ITeachersRepository;
-
+class CreateTeacherService {
   constructor(
     @inject('UsersRepository')
-    usersRepository: IUsersRepository,
+    private usersRepository: IUsersRepository,
     @inject('TeachersRepository')
-    teachersRepository: ITeachersRepository,
-  ) {
-    this.usersRepository = usersRepository;
-    this.teachersRepository = teachersRepository;
-  }
+    private teachersRepository: ITeachersRepository,
+    @inject('HashProvider')
+    private hashProvider: IHashProvider,
+  ) {}
 
-  public async execute({ enrollment, userId }: IRequest): Promise<Teacher> {
-    const user = await this.usersRepository.findById(userId);
-
-    if (!user) {
-      throw new AppError('User does not exists');
+  public async execute({ name, email, password, enrollment }: IRequest): Promise<Teacher> {
+    if (await this.usersRepository.findByEmail(email)) {
+      throw new AppError('Email address already used');
     }
 
-    if (user.role !== Role.ADMIN) {
-      throw new AppError('User already linked to another');
-    }
-
-    const duplicateEnrollment = await this.teachersRepository.findByEnrollment(
-      enrollment,
-    );
-
-    if (duplicateEnrollment) {
+    if (await this.teachersRepository.findByEnrollment(enrollment)) {
       throw new AppError('Duplicate enrollment');
     }
 
-    user.role = Role.TEACHER;
-    await this.usersRepository.save(user);
-
-    const teacher = await this.teachersRepository.create({
-      enrollment,
-      user,
+    const user = await this.usersRepository.create({
+      name,
+      email,
+      password: await this.hashProvider.generateHash(password),
+      role: Role.TEACHER,
     });
 
-    return teacher;
+    return this.teachersRepository.create({ enrollment, user });
   }
 }
 

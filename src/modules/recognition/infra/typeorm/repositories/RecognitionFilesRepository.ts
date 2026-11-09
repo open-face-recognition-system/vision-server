@@ -1,13 +1,14 @@
 import ICreateRecognitionFileDOT from '@modules/recognition/dtos/ICreateRecognitionFileDOT';
 import IRecognitionFilesRepository from '@modules/recognition/repositories/IRecognitionFilesRepository';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import RecognitionFile from '../entities/RecognitionFile';
 
 class RecognitionFilesRepository implements IRecognitionFilesRepository {
   private ormRepository: Repository<RecognitionFile>;
 
   constructor() {
-    this.ormRepository = getRepository(RecognitionFile);
+    this.ormRepository = dataSource.getRepository(RecognitionFile);
   }
 
   public async findByPath(path: string): Promise<RecognitionFile | undefined> {
@@ -16,7 +17,7 @@ class RecognitionFilesRepository implements IRecognitionFilesRepository {
         path,
       },
     });
-    return photo;
+    return photo ?? undefined;
   }
 
   public async create({
@@ -26,7 +27,7 @@ class RecognitionFilesRepository implements IRecognitionFilesRepository {
       path,
     });
     await this.ormRepository.save(photo);
-    return photo;
+    return photo ?? undefined;
   }
 
   public async delete(id: number): Promise<void> {

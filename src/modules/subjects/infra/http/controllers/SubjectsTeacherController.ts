@@ -1,5 +1,5 @@
 import SubjectsService from '@modules/subjects/services/SubjectsService';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -12,7 +12,7 @@ class SubjectsTeacherController {
       teacherId ? Number(teacherId) : userId,
       request.query,
     );
-    return response.json(classToClass(classes));
+    return response.json(instanceToInstance(classes));
   }
 }
 

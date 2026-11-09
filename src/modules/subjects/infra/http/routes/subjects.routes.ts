@@ -7,6 +7,8 @@ import EnrollStudentController from '../controllers/EnrollStudentController';
 import UnenrollStudentController from '../controllers/UnenrollStudentController';
 import SubjectsTeacherController from '../controllers/SubjectsTeacherController';
 import EnrollStudentPdfController from '../controllers/EnrollStudentPdfController';
+import authorize, { STAFF } from '@shared/infra/http/middlewares/authorize';
+import Role from '@modules/users/infra/typeorm/entities/Role';
 
 const subjectsRouter = Router();
 const subjectsController = new SubjectsController();
@@ -17,10 +19,10 @@ const subjectsTeacherController = new SubjectsTeacherController();
 
 const upload = multer(uploadConfig.multer);
 
-subjectsRouter.get('/', subjectsController.list);
-subjectsRouter.get('/:id', subjectsController.show);
+subjectsRouter.get('/', authorize(...STAFF), subjectsController.list);
+subjectsRouter.get('/:id', authorize(...STAFF), subjectsController.show);
 subjectsRouter.post(
-  '/:id/enroll',
+  '/:id/enroll', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       studentId: Joi.number().required(),
@@ -29,12 +31,12 @@ subjectsRouter.post(
   enrollStudentController.create,
 );
 subjectsRouter.post(
-  '/:id/enroll/pdf',
+  '/:id/enroll/pdf', authorize(Role.ADMIN),
   upload.single('file'),
   enrollStudentPdfController.create,
 );
 subjectsRouter.post(
-  '/:id/unenroll',
+  '/:id/unenroll', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       studentId: Joi.number().required(),
@@ -43,7 +45,7 @@ subjectsRouter.post(
   unenrollStudentController.create,
 );
 subjectsRouter.post(
-  '/',
+  '/', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -55,7 +57,7 @@ subjectsRouter.post(
   subjectsController.create,
 );
 subjectsRouter.put(
-  '/:id',
+  '/:id', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       name: Joi.string().required(),
@@ -66,7 +68,7 @@ subjectsRouter.put(
   }),
   subjectsController.update,
 );
-subjectsRouter.delete('/:id', subjectsController.delete);
-subjectsRouter.get('/teacher/:teacherId', subjectsTeacherController.list);
+subjectsRouter.delete('/:id', authorize(Role.ADMIN), subjectsController.delete);
+subjectsRouter.get('/teacher/:teacherId', authorize(Role.ADMIN), subjectsTeacherController.list);
 
 export default subjectsRouter;

@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  Relation,
 } from 'typeorm';
 import Subject from './Subject';
 
@@ -20,11 +21,11 @@ class SubjectStudent {
 
   @ManyToOne(() => Student)
   @JoinColumn({ name: 'student_id' })
-  student: Student;
+  student: Relation<Student>;
 
   @ManyToOne(() => Subject)
   @JoinColumn({ name: 'subject_id' })
-  subject: Subject;
+  subject: Relation<Subject>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

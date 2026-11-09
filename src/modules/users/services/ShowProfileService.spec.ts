@@ -30,7 +30,7 @@ describe('UpdateProfile', () => {
   });
 
   it('should not be able show the profile from non-existing user', async () => {
-    expect(
+    await expect(
       showProfileService.execute({
         userId: 0,
       }),

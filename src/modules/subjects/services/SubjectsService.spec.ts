@@ -97,7 +97,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to create subject', async () => {
-    expect(subjectsService.listAllByTeacher(0, {})).rejects.toBeInstanceOf(
+    await expect(subjectsService.listAllByTeacher(0, {})).rejects.toBeInstanceOf(
       AppError,
     );
   });
@@ -128,7 +128,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to create subject', async () => {
-    expect(subjectsService.showSubject(0)).rejects.toBeInstanceOf(AppError);
+    await expect(subjectsService.showSubject(0)).rejects.toBeInstanceOf(AppError);
   });
 
   it('should be able to create subject', async () => {
@@ -155,7 +155,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to create subject if teacher does not exists', async () => {
-    expect(
+    await expect(
       subjectsService.createSubject({
         name: 'Subject',
         course: 'Course',
@@ -215,7 +215,7 @@ describe('Default User Service', () => {
       teacherId: teacher.id,
     });
 
-    expect(
+    await expect(
       subjectsService.updateSubject(oldSubject.id, {
         name: 'New Subject',
         course: 'Course',
@@ -993,7 +993,7 @@ describe('Default User Service', () => {
   });
 
   it('should not parse pdf2 with no exists subject', async () => {
-    expect(
+    await expect(
       subjectsService.createAndEnrollStudentsByPdf(0, 'pdf2.pdf'),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -1051,7 +1051,7 @@ describe('Default User Service', () => {
       user: userStudent,
     });
 
-    expect(subjectsService.enrollStudent(0, student.id)).rejects.toBeInstanceOf(
+    await expect(subjectsService.enrollStudent(0, student.id)).rejects.toBeInstanceOf(
       AppError,
     );
   });
@@ -1076,7 +1076,7 @@ describe('Default User Service', () => {
       teacherId: teacher.id,
     });
 
-    expect(subjectsService.enrollStudent(subject.id, 0)).rejects.toBeInstanceOf(
+    await expect(subjectsService.enrollStudent(subject.id, 0)).rejects.toBeInstanceOf(
       AppError,
     );
   });
@@ -1094,7 +1094,7 @@ describe('Default User Service', () => {
       user: userStudent,
     });
 
-    expect(
+    await expect(
       subjectsService.unenrollStudent(0, student.id),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -1119,7 +1119,7 @@ describe('Default User Service', () => {
       teacherId: teacher.id,
     });
 
-    expect(
+    await expect(
       subjectsService.unenrollStudent(subject.id, 0),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -1156,7 +1156,7 @@ describe('Default User Service', () => {
       teacherId: teacher.id,
     });
 
-    expect(
+    await expect(
       subjectsService.unenrollStudent(subject.id, student.id),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -1196,9 +1196,9 @@ describe('Default User Service', () => {
     await subjectsService.enrollStudent(subject.id, student.id);
     await subjectsService.unenrollStudent(subject.id, student.id);
 
-    expect(
+    await expect(
       subjectsService.enrollStudent(subject.id, student.id),
-    ).rejects.toBeInstanceOf(AppError);
+    ).resolves.toBe(student);
   });
 
   it('should not be able to enroll student if student is already enrolled', async () => {
@@ -1235,7 +1235,7 @@ describe('Default User Service', () => {
 
     await subjectsService.enrollStudent(subject.id, student.id);
 
-    expect(
+    await expect(
       subjectsService.enrollStudent(subject.id, student.id),
     ).rejects.toBeInstanceOf(AppError);
   });

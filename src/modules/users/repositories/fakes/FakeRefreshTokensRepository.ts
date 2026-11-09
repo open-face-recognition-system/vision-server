@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4';
+import { randomUUID } from 'crypto';
 
 import User from '@modules/users/infra/typeorm/entities/User';
 import RefreshToken from '@modules/users/infra/typeorm/entities/RefreshToken';
@@ -11,7 +11,7 @@ class FakeRefreshTokensRepository implements IRefreshTokensRepository {
     const userToken = new RefreshToken();
     Object.assign(userToken, {
       id: Math.random(),
-      refreshToken: uuid(),
+      refreshToken: randomUUID(),
       user,
       createdAt: new Date(),
       updatedAt: new Date(),

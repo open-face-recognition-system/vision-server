@@ -2,31 +2,28 @@ import ICreateSemesterDTO from '@modules/semesters/dtos/ICreateSemesterDTO';
 import ISaveSemesterDTO from '@modules/semesters/dtos/ISaveSemesterDTO';
 import ISemestersRepository from '@modules/semesters/repositories/ISemestersRepository';
 import Pagination from '@shared/dtos/Pagination';
-import { getRepository, Repository } from 'typeorm';
+import { PageQuery } from '@shared/container/providers/QueryBuilderProvider/models/IQueryBuilderProvider';
+import { Repository } from 'typeorm';
+import dataSource from '@shared/infra/typeorm/dataSource';
 import Semester from '../entities/Semester';
 
 class SemestersRepository implements ISemestersRepository {
   private ormRepository: Repository<Semester>;
 
   constructor() {
-    this.ormRepository = getRepository(Semester);
+    this.ormRepository = dataSource.getRepository(Semester);
   }
 
-  public async findAllWithPagination(query: any): Promise<Pagination> {
-    const semesters = await this.ormRepository.find(query);
-
-    const count = await this.ormRepository.count();
-    return {
-      total: count,
-      data: semesters || [],
-    };
+  public async findAllWithPagination(query: PageQuery): Promise<Pagination> {
+    const [data, total] = await this.ormRepository.findAndCount(query);
+    return { total, data };
   }
 
   public async findById(id: number): Promise<Semester | undefined> {
     const semester = await this.ormRepository.findOne({
       where: { id },
     });
-    return semester;
+    return semester ?? undefined;
   }
 
   public async create({
@@ -35,7 +32,7 @@ class SemestersRepository implements ISemestersRepository {
   }: ICreateSemesterDTO): Promise<Semester> {
     const semester = this.ormRepository.create({ startDate, endDate });
     await this.ormRepository.save(semester);
-    return semester;
+    return semester ?? undefined;
   }
 
   public async delete(id: number): Promise<void> {

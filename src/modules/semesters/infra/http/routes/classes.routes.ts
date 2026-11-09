@@ -2,15 +2,17 @@ import { Router } from 'express';
 import { celebrate, Segments, Joi } from 'celebrate';
 import ClassesController from '../controllers/ClassesController';
 import ClassesTeacherController from '../controllers/ClassesTeacherController';
+import authorize, { STAFF } from '@shared/infra/http/middlewares/authorize';
+import Role from '@modules/users/infra/typeorm/entities/Role';
 
 const classesRouter = Router();
 const classesController = new ClassesController();
 const classesTeacherController = new ClassesTeacherController();
 
-classesRouter.get('/', classesController.list);
-classesRouter.get('/:id', classesController.show);
+classesRouter.get('/', authorize(...STAFF), classesController.list);
+classesRouter.get('/:id', authorize(...STAFF), classesController.show);
 classesRouter.post(
-  '/',
+  '/', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       startHour: Joi.date().required(),
@@ -23,7 +25,7 @@ classesRouter.post(
   classesController.create,
 );
 classesRouter.put(
-  '/:id',
+  '/:id', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       startHour: Joi.date().required(),
@@ -35,11 +37,11 @@ classesRouter.put(
   }),
   classesController.update,
 );
-classesRouter.delete('/:id', classesController.delete);
+classesRouter.delete('/:id', authorize(Role.ADMIN), classesController.delete);
 classesRouter.get(
-  '/teacher/classes/mobile',
+  '/teacher/classes/mobile', authorize(Role.TEACHER),
   classesTeacherController.listMobile,
 );
-classesRouter.get('/teacher/:teacherId', classesTeacherController.list);
+classesRouter.get('/teacher/:teacherId', authorize(Role.ADMIN), classesTeacherController.list);
 
 export default classesRouter;

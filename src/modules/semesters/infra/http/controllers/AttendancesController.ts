@@ -1,5 +1,5 @@
 import AttendancesService from '@modules/semesters/services/AttendancesService';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
@@ -7,7 +7,7 @@ class AttendancesController {
   public async list(request: Request, response: Response): Promise<Response> {
     const attendancesService = container.resolve(AttendancesService);
     const attendances = await attendancesService.listAttendances(request.query);
-    return response.json(classToClass(attendances));
+    return response.json(instanceToInstance(attendances));
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
@@ -16,7 +16,7 @@ class AttendancesController {
     const attendancesService = container.resolve(AttendancesService);
     const attendance = await attendancesService.showAttendance(Number(id));
 
-    return response.json(classToClass(attendance));
+    return response.json(instanceToInstance(attendance));
   }
 
   public async create(request: Request, response: Response): Promise<Response> {
@@ -29,7 +29,7 @@ class AttendancesController {
       studentId,
     });
 
-    return response.status(201).json(classToClass(attendance));
+    return response.status(201).json(instanceToInstance(attendance));
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
@@ -43,7 +43,7 @@ class AttendancesController {
       studentId,
     });
 
-    return response.json(classToClass(attendance));
+    return response.json(instanceToInstance(attendance));
   }
 
   public async delete(request: Request, response: Response): Promise<Response> {

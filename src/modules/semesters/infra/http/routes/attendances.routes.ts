@@ -2,16 +2,18 @@ import { Router } from 'express';
 import { celebrate, Segments, Joi } from 'celebrate';
 import AttendancesController from '../controllers/AttendancesController';
 import AttendancesClassController from '../controllers/AttendancesClassController';
+import authorize, { STAFF } from '@shared/infra/http/middlewares/authorize';
+import Role from '@modules/users/infra/typeorm/entities/Role';
 
 const attendancesRouter = Router();
 const attendancesController = new AttendancesController();
 const attendancesClassController = new AttendancesClassController();
 
-attendancesRouter.get('/', attendancesController.list);
-attendancesRouter.get('/:id', attendancesController.show);
-attendancesRouter.get('/class/:classId', attendancesClassController.list);
+attendancesRouter.get('/', authorize(...STAFF), attendancesController.list);
+attendancesRouter.get('/:id', authorize(...STAFF), attendancesController.show);
+attendancesRouter.get('/class/:classId', authorize(...STAFF), attendancesClassController.list);
 attendancesRouter.post(
-  '/',
+  '/', authorize(Role.ADMIN),
   celebrate({
     [Segments.BODY]: {
       isPresent: Joi.boolean().required(),
@@ -22,7 +24,7 @@ attendancesRouter.post(
   attendancesController.create,
 );
 attendancesRouter.put(
-  '/:id',
+  '/:id', authorize(...STAFF),
   celebrate({
     [Segments.BODY]: {
       isPresent: Joi.boolean().required(),
@@ -32,6 +34,6 @@ attendancesRouter.put(
   }),
   attendancesController.update,
 );
-attendancesRouter.delete('/:id', attendancesController.delete);
+attendancesRouter.delete('/:id', authorize(Role.ADMIN), attendancesController.delete);
 
 export default attendancesRouter;

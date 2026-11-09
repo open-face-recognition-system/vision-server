@@ -1,96 +1,52 @@
 import AppError from '@shared/errors/AppError';
 import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepository';
+import FakeHashProvider from '@modules/users/providers/HashProvider/fakes/FakeHashProvider';
 import CreateTeacherService from './CreateTeacherService';
 import FakeTeachersRepository from '../repositories/fakes/FakeTeachersRepository';
 import Role from '../infra/typeorm/entities/Role';
 
-let fakeUsersRepository: FakeUsersRepository;
-let fakeTeachersRepository: FakeTeachersRepository;
-let createTeacherService: CreateTeacherService;
+const signUp = { name: 'John Doe', email: 'johndoe@example.com', password: 'secret', enrollment: '123123' };
 
-describe('Create Teacher', () => {
+describe('CreateTeacherService', () => {
+  let usersRepository: FakeUsersRepository;
+  let teachersRepository: FakeTeachersRepository;
+  let createTeacherService: CreateTeacherService;
+
   beforeEach(() => {
-    fakeUsersRepository = new FakeUsersRepository();
-    fakeUsersRepository = new FakeUsersRepository();
-    fakeTeachersRepository = new FakeTeachersRepository();
-    createTeacherService = new CreateTeacherService(
-      fakeUsersRepository,
-      fakeTeachersRepository,
-    );
+    usersRepository = new FakeUsersRepository();
+    teachersRepository = new FakeTeachersRepository();
+    createTeacherService = new CreateTeacherService(usersRepository, teachersRepository, new FakeHashProvider());
   });
 
-  it('should be able to create a new teacher', async () => {
-    const user = await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
+  it('creates a user with the teacher role, never admin', async () => {
+    const teacher = await createTeacherService.execute(signUp);
 
-    const teacher = await createTeacherService.execute({
-      enrollment: '123123',
-      userId: user.id,
-    });
-
-    expect(teacher).toHaveProperty('id');
-    expect(teacher.user.role).toBe('teacher');
+    expect(teacher.enrollment).toBe('123123');
+    expect(teacher.user).toMatchObject({ name: 'John Doe', email: 'johndoe@example.com', role: Role.TEACHER });
   });
 
-  it('should not be able to create a new teacher with no user', async () => {
-    await expect(
-      createTeacherService.execute({
-        enrollment: '123123',
-        userId: 1,
-      }),
-    ).rejects.toBeInstanceOf(AppError);
+  it('stores the hashed password', async () => {
+    const hashProvider = new FakeHashProvider();
+    jest.spyOn(hashProvider, 'generateHash').mockResolvedValue('hashed');
+    createTeacherService = new CreateTeacherService(usersRepository, teachersRepository, hashProvider);
+
+    const teacher = await createTeacherService.execute(signUp);
+
+    expect(teacher.user.password).toBe('hashed');
   });
 
-  it('should not be able to create a new teacher with user already linked', async () => {
-    const user = await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
+  it('rejects an email already in use', async () => {
+    await createTeacherService.execute(signUp);
 
-    await createTeacherService.execute({
-      enrollment: '123123',
-      userId: user.id,
-    });
+    await expect(createTeacherService.execute({ ...signUp, enrollment: '999' })).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('rejects a duplicate enrollment without creating an orphan user', async () => {
+    await createTeacherService.execute(signUp);
 
     await expect(
-      createTeacherService.execute({
-        enrollment: '123123',
-        userId: user.id,
-      }),
+      createTeacherService.execute({ ...signUp, email: 'other@example.com' }),
     ).rejects.toBeInstanceOf(AppError);
-  });
-
-  it('should not be able to create a new teacher with duplicate enrollment', async () => {
-    const firstUser = await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
-
-    const secondUser = await fakeUsersRepository.create({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      password: '123123',
-      role: Role.ADMIN,
-    });
-
-    await createTeacherService.execute({
-      enrollment: '123123',
-      userId: firstUser.id,
-    });
-
-    await expect(
-      createTeacherService.execute({
-        enrollment: '123123',
-        userId: secondUser.id,
-      }),
-    ).rejects.toBeInstanceOf(AppError);
+    expect(await usersRepository.findByEmail('other@example.com')).toBeUndefined();
   });
 });

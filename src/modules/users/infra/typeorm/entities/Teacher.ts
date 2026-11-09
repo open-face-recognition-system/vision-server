@@ -1,12 +1,13 @@
 import {
+  Entity,
   Column,
   CreateDateColumn,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Relation,
 } from 'typeorm';
-import { Entity } from 'typeorm/decorator/entity/Entity';
 import User from './User';
 
 @Entity('teachers')
@@ -19,7 +20,7 @@ class Teacher {
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

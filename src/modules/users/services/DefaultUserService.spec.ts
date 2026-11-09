@@ -46,7 +46,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to list teacher by if if teacher does not exists', async () => {
-    expect(defaultUserService.findStudentById(0)).rejects.toBeInstanceOf(
+    await expect(defaultUserService.findStudentById(0)).rejects.toBeInstanceOf(
       AppError,
     );
   });
@@ -70,7 +70,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to list teacher by if if teacher does not exists', async () => {
-    expect(defaultUserService.findTeacherById(0)).rejects.toBeInstanceOf(
+    await expect(defaultUserService.findTeacherById(0)).rejects.toBeInstanceOf(
       AppError,
     );
   });
@@ -177,7 +177,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to update student if student does not exists', async () => {
-    expect(
+    await expect(
       defaultUserService.updateStudent(0, { name: 'test', email: 'email' }),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -204,7 +204,7 @@ describe('Default User Service', () => {
   });
 
   it('should not be able to update teacher if teacher does not exists', async () => {
-    expect(
+    await expect(
       defaultUserService.updateTeacher(0, { name: 'test', email: 'email' }),
     ).rejects.toBeInstanceOf(AppError);
   });

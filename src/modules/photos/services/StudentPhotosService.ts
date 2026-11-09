@@ -131,12 +131,8 @@ class StudentPhotosService {
     return photo;
   }
 
-  public async updatePhoto(photoId: number, filename: string): Promise<Photo> {
-    const photo = await this.photosRepository.findById(photoId);
-
-    if (!photo) {
-      throw new AppError('Photo does not exists');
-    }
+  public async updatePhoto(studentId: number, photoId: number, filename: string): Promise<Photo> {
+    const photo = await this.findOwnPhoto(studentId, photoId);
 
     await this.storageProvider.deleteFile(photo.path);
     const path = await this.storageProvider.saveFile(filename);
@@ -148,15 +144,21 @@ class StudentPhotosService {
     return photo;
   }
 
-  public async deletePhoto(photoId: number): Promise<void> {
-    const photo = await this.photosRepository.findById(photoId);
-
-    if (!photo) {
-      throw new AppError('Photo does not exists');
-    }
+  public async deletePhoto(studentId: number, photoId: number): Promise<void> {
+    const photo = await this.findOwnPhoto(studentId, photoId);
 
     await this.storageProvider.deleteFile(photo.path);
     await this.photosRepository.delete(photoId);
+  }
+
+  private async findOwnPhoto(studentId: number, photoId: number): Promise<Photo> {
+    const photo = await this.photosRepository.findById(photoId);
+
+    if (!photo || photo.student.id !== studentId) {
+      throw new AppError('Photo does not exist', 404);
+    }
+
+    return photo;
   }
 }
 
