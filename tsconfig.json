@@ -1,37 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2023",
     "module": "commonjs",
-    "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "strictPropertyInitialization": false,
-    "baseUrl": "./src",
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
     "skipLibCheck": true,
+    "types": ["node", "jest"],
     "paths": {
-      "@config/*": [
-        "config/*"
-      ],
-      "@modules/*": [
-        "modules/*"
-      ],
-      "@shared/*": [
-        "shared/*"
-      ]
+      "@config/*": ["./src/config/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   },
-  "exclude": [
-    "commitlint.config.js",
-    "coverage",
-    "jest.config.js",
-    "prettier.config.js",
-    "babel.config.js"
-  ]
+  "include": ["src"]
 }
