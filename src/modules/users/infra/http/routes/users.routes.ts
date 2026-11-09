@@ -1,23 +1,12 @@
 import { Router } from 'express';
 
-import { celebrate, Segments, Joi } from 'celebrate';
-
 import UsersController from '../controllers/UsersController';
+import authorize from '@shared/infra/http/middlewares/authorize';
+import Role from '@modules/users/infra/typeorm/entities/Role';
 
 const usersRouter = Router();
 const usersController = new UsersController();
 
-usersRouter.post(
-  '/',
-  celebrate({
-    [Segments.BODY]: {
-      name: Joi.string().required(),
-      email: Joi.string().email().required(),
-      password: Joi.string().required(),
-    },
-  }),
-  usersController.create,
-);
-usersRouter.delete('/:id', usersController.delete);
+usersRouter.delete('/:id', authorize(Role.ADMIN), usersController.delete);
 
 export default usersRouter;

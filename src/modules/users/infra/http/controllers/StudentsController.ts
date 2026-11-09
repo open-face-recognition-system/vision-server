@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { classToClass } from 'class-transformer';
+import { instanceToInstance } from 'class-transformer';
 import CreateStudentService from '@modules/users/services/CreateStudentService';
 import DefaultUserService from '@modules/users/services/DefaultUserService';
 
@@ -9,7 +9,7 @@ class StudentsController {
     const defaultUserService = container.resolve(DefaultUserService);
     const students = await defaultUserService.findAllStudents(request.query);
 
-    return response.json(classToClass(students));
+    return response.json(instanceToInstance(students));
   }
 
   public async show(request: Request, response: Response): Promise<Response> {
@@ -18,16 +18,16 @@ class StudentsController {
     const defaultUserService = container.resolve(DefaultUserService);
     const student = await defaultUserService.findStudentById(Number(id));
 
-    return response.json(classToClass(student));
+    return response.json(instanceToInstance(student));
   }
 
   public async create(request: Request, response: Response): Promise<Response> {
-    const { enrollment, userId } = request.body;
+    const { name, email, password, enrollment } = request.body;
 
     const createStudentService = container.resolve(CreateStudentService);
-    const student = await createStudentService.execute({ enrollment, userId });
+    const student = await createStudentService.execute({ name, email, password, enrollment });
 
-    return response.json(classToClass(student));
+    return response.json(instanceToInstance(student));
   }
 
   public async update(request: Request, response: Response): Promise<Response> {
@@ -40,7 +40,7 @@ class StudentsController {
       email,
     });
 
-    return response.json(classToClass(teacher));
+    return response.json(instanceToInstance(teacher));
   }
 }
 

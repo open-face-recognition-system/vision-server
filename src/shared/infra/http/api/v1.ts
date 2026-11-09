@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, Router } from 'express';
+import { Router } from 'express';
 
 import usersRouter from '@modules/users/infra/http/routes/users.routes';
 import teachersRouter from '@modules/users/infra/http/routes/teachers.routes';
@@ -14,7 +14,6 @@ import attendancesRouter from '@modules/semesters/infra/http/routes/attendances.
 import classesTeacherRouter from '@modules/semesters/infra/http/routes/classesTeacher.routes';
 import subjectsTeacherRouter from '@modules/subjects/infra/http/routes/subjectsTeacher.routes';
 import recognitionRouter from '@modules/recognition/infra/http/routes/recognition.routes';
-import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const v1Router = Router();
 
@@ -24,16 +23,9 @@ v1Router.use('/students', studentsRouter);
 v1Router.use('/sessions', sessionsRouter);
 v1Router.use('/refresh-tokens', refreshTokensRouter);
 
-v1Router.use((request: Request, response: Response, next: NextFunction) => {
-  ensureAuthenticated(['admin', 'student', 'teacher'], request, response, next);
-});
-
 v1Router.use('/photos', photosRouter);
 v1Router.use('/profiles', profilesRouter);
 
-v1Router.use((request: Request, response: Response, next: NextFunction) => {
-  ensureAuthenticated(['admin', 'teacher'], request, response, next);
-});
 v1Router.use('/classes', classesTeacherRouter);
 v1Router.use('/subjects', subjectsTeacherRouter);
 v1Router.use('/subjects', subjectsRouter);
@@ -41,9 +33,5 @@ v1Router.use('/classes', classesRouter);
 v1Router.use('/recognition', recognitionRouter);
 v1Router.use('/attendances', attendancesRouter);
 v1Router.use('/semesters', semestersRouter);
-
-v1Router.use((request: Request, response: Response, next: NextFunction) => {
-  ensureAuthenticated(['admin'], request, response, next);
-});
 
 export default v1Router;
