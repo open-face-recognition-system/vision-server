@@ -20,7 +20,6 @@ class ClassesTeacherController {
     response: Response,
   ): Promise<Response> {
     const userId = request.user.id;
-    console.log(userId);
     const classesService = container.resolve(ClassesService);
     const classes = await classesService.listAllByTeacherForMobile(userId);
     return response.json(instanceToInstance(classes));
