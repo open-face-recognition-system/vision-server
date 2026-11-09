@@ -1,9 +1,15 @@
+export interface Samples {
+  ids: number[];
+  paths: string[];
+}
+
+export interface Prediction {
+  studentId: number;
+  distance: number;
+}
+
 export default interface IRecognitionProvider {
-  training(
-    ids: number[],
-    photosPath: string[],
-    subjectId: number,
-  ): Promise<string>;
-  recognize(id: number, photoPath: string): Promise<string>;
-  update(id: number, photoPath: string, subjectId: number): Promise<string>;
+  train(subjectId: number, samples: Samples): Promise<string>;
+  update(subjectId: number, samples: Samples): Promise<void>;
+  predict(subjectId: number, imagePath: string): Promise<Prediction>;
 }

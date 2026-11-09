@@ -1,33 +1,31 @@
-import fs from 'fs';
 import path from 'path';
-import AppError from '@shared/errors/AppError';
 import { injectable, inject } from 'tsyringe';
+import AppError from '@shared/errors/AppError';
 import uploadConfig from '@config/upload';
-import IRecognitionProvider from '@shared/container/providers/RecognitionProvider/models/IRecognitionProvider';
-import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
+import IRecognitionProvider, {
+  Samples,
+} from '@shared/container/providers/RecognitionProvider/models/IRecognitionProvider';
 import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
-import Student from '@modules/users/infra/typeorm/entities/Student';
+import ISubjectsRepository from '@modules/subjects/repositories/ISubjectsRepository';
 import IClassesRepository from '@modules/semesters/repositories/IClassesRepository';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
-import Photo from '@modules/photos/infra/typeorm/entities/Photo';
-import SubjectStudent from '@modules/subjects/infra/typeorm/entities/SubjectStudent';
 import IAttendancesRepository from '@modules/semesters/repositories/IAttendancesRepository';
-import IDownloadProvider from '@shared/container/providers/DownloadProvider/models/IDownloadProvider';
+import Student from '@modules/users/infra/typeorm/entities/Student';
+import Subject from '@modules/subjects/infra/typeorm/entities/Subject';
+import Class from '@modules/semesters/infra/typeorm/entities/Class';
 import IRecognitionFilesRepository from '../repositories/IRecognitionFilesRepository';
 
-interface IRequest {
+interface ITrainingRequest {
   subjectId: number;
-}
-
-interface IUpdateRequest {
-  studentId: number;
-  classId: number;
-  filePath: string;
 }
 
 interface IRecognizeRequest {
   classId: number;
-  filePath: string;
+  file: string;
+}
+
+interface IUpdateRequest extends IRecognizeRequest {
+  studentId: number;
 }
 
 interface IRecognizeResponse {
@@ -36,233 +34,137 @@ interface IRecognizeResponse {
   confidence: number;
 }
 
-interface TrainingResponse {
-  ids: number[];
-  photosPath: string[];
-}
-
 @injectable()
 class RecognitionService {
-  private subjectsStudentsRepository: ISubjectsRepository;
-
-  private classesRepository: IClassesRepository;
-
-  private studentsRepository: IStudentsRepository;
-
-  private attendancesRepository: IAttendancesRepository;
-
-  private recognitionProvider: IRecognitionProvider;
-
-  private storageProvider: IStorageProvider;
-
-  private downloadProvider: IDownloadProvider;
-
-  private recognitionFilesRepository: IRecognitionFilesRepository;
-
   constructor(
     @inject('SubjectsRepository')
-    subjectsStudentsRepository: ISubjectsRepository,
+    private subjectsRepository: ISubjectsRepository,
     @inject('ClassesRepository')
-    classesRepository: IClassesRepository,
+    private classesRepository: IClassesRepository,
     @inject('StudentsRepository')
-    studentsRepository: IStudentsRepository,
-    @inject('RecognitionFileStorageProvider')
-    storageProvider: IStorageProvider,
+    private studentsRepository: IStudentsRepository,
+    @inject('StorageProvider')
+    private storageProvider: IStorageProvider,
     @inject('RecognitionProvider')
-    recognitionProvider: IRecognitionProvider,
+    private recognitionProvider: IRecognitionProvider,
     @inject('AttendancesRepository')
-    attendancesRepository: IAttendancesRepository,
-    @inject('DownloadProvider')
-    downloadProvider: IDownloadProvider,
+    private attendancesRepository: IAttendancesRepository,
     @inject('RecognitionFilesRepository')
-    recognitionFilesRepository: IRecognitionFilesRepository,
-  ) {
-    this.subjectsStudentsRepository = subjectsStudentsRepository;
-    this.classesRepository = classesRepository;
-    this.studentsRepository = studentsRepository;
-    this.storageProvider = storageProvider;
-    this.recognitionProvider = recognitionProvider;
-    this.attendancesRepository = attendancesRepository;
-    this.downloadProvider = downloadProvider;
-    this.recognitionFilesRepository = recognitionFilesRepository;
-  }
+    private recognitionFilesRepository: IRecognitionFilesRepository,
+    @inject('RecognitionThreshold')
+    private threshold: number,
+  ) {}
 
-  public async training({ subjectId }: IRequest): Promise<boolean> {
-    const subject = await this.subjectsStudentsRepository.findById(subjectId);
+  public async training({ subjectId }: ITrainingRequest): Promise<void> {
+    const subject = await this.subjectsRepository.findById(subjectId);
 
     if (!subject) {
-      throw new AppError('Subject does not exists');
+      throw new AppError('Subject does not exist');
     }
 
-    const { students } = subject;
+    const modelFile = await this.recognitionProvider.train(subject.id, this.trainingSamples(subject));
 
-    if (subject.students.length <= 1) {
-      throw new AppError('Subject needs at least one student');
-    }
+    const recognitionFile =
+      (await this.recognitionFilesRepository.findByPath(modelFile)) ??
+      (await this.recognitionFilesRepository.create({ path: modelFile }));
 
-    const ids: number[] = [];
-    const photosPath: string[] = [];
+    await this.subjectsRepository.save({ id: subject.id, recognitionFile });
+  }
 
-    const studentsPromise = students.map(async subjectStudent => {
-      const { photos } = subjectStudent.student;
+  public async recognize({ classId, file }: IRecognizeRequest): Promise<IRecognizeResponse> {
+    try {
+      const lecture = await this.findTrainedClass(classId);
 
-      if (photos.length === 0 && subjectStudent.isEnrolled) {
-        throw new AppError('Student needs at least one photo');
+      const { studentId, distance } = await this.recognitionProvider.predict(
+        lecture.subject.id,
+        this.tmpPath(file),
+      );
+
+      if (distance > this.threshold) {
+        throw new AppError('Student not recognized');
       }
 
-      const photosIds = this.getAllPhotosAndIds(subjectStudent);
+      const student = await this.studentsRepository.findById(studentId);
 
-      ids.push(...photosIds.ids);
-      photosPath.push(...photosIds.photosPath);
-
-      await this.downloadAllStudentsPhotos(photos);
-    });
-
-    await Promise.all(studentsPromise);
-
-    const fileName = await this.recognitionProvider.training(
-      ids,
-      photosPath,
-      subject.id,
-    );
-
-    const filePath = fileName.trim();
-    const fileExists = await this.recognitionFilesRepository.findByPath(
-      filePath,
-    );
-    await this.storageProvider.saveFile(filePath);
-    if (!fileExists) {
-      const recognitionFile = await this.recognitionFilesRepository.create({
-        path: filePath,
-      });
-      await this.subjectsStudentsRepository.save({
-        id: subject.id,
-        recognitionFile,
-      });
-    }
-
-    await this.deleteTmpFile();
-    return true;
-  }
-
-  getAllPhotosAndIds(subjectStudent: SubjectStudent): TrainingResponse {
-    const { photos } = subjectStudent.student;
-    const ids: number[] = [];
-    const photosPath: string[] = [];
-    photos.map(async photo => {
-      if (subjectStudent.isEnrolled) {
-        const photoPath = path.resolve(uploadConfig.tmpFolder, photo.path);
-        photosPath.push(photoPath);
-        ids.push(subjectStudent.student.id);
+      if (!student) {
+        throw new AppError('Student does not exist');
       }
-    });
-    return {
-      ids,
-      photosPath,
-    };
-  }
 
-  async deleteTmpFile(): Promise<void> {
-    fs.readdir('./tmp', (err, files) => {
-      files.forEach(async file => {
-        const stat = await fs.promises.lstat(`./tmp/${file}`);
-        if (stat.isFile()) {
-          await this.storageProvider.deleteTmpFile(file);
-        }
-      });
-    });
-  }
+      const attendances = await this.attendancesRepository.findAllByClassId(classId);
+      const attendance = attendances.find(current => current.student.id === student.id);
 
-  public async downloadAllStudentsPhotos(photos: Photo[]): Promise<void> {
-    const downloadPhotosPromise = photos.map(async photo => {
-      await this.downloadProvider.download(photo.getUrl() || '', photo.path);
-    });
+      if (!attendance) {
+        throw new AppError('Student is not on the attendance list');
+      }
 
-    await Promise.all(downloadPhotosPromise);
-  }
-
-  public async recognize({
-    classId,
-    filePath,
-  }: IRecognizeRequest): Promise<IRecognizeResponse> {
-    const classExists = await this.classesRepository.findById(classId);
-
-    if (!classExists) {
-      throw new AppError('Class does not exists');
-    }
-
-    const { subject } = classExists;
-
-    const response = await this.recognitionProvider.recognize(
-      subject.id,
-      filePath,
-    );
-
-    await this.storageProvider.deleteTmpFile(filePath);
-
-    const [studentId, confidence] = response.split(',');
-
-    if (Number(confidence) > 70) {
-      throw new AppError('Aluno não reconhecido');
-    }
-
-    const student = await this.studentsRepository.findById(Number(studentId));
-
-    if (!student) {
-      throw new AppError('Student does not exists');
-    }
-
-    const attendances = await this.attendancesRepository.findAllByClassId(
-      classId,
-    );
-
-    const findAttendance = attendances.find(
-      attendance => attendance.student.id === student.id,
-    );
-
-    if (!findAttendance) {
-      throw new AppError('Aluno não existe na lista de chamada');
-    }
-
-    if (findAttendance) {
-      this.attendancesRepository.save({
-        id: findAttendance.id,
-        class: classExists,
+      await this.attendancesRepository.save({
+        id: attendance.id,
+        class: lecture,
         student,
         isPresent: true,
       });
-    }
 
-    return {
-      student,
-      confidence: Number(confidence),
-      attendanceId: findAttendance.id,
-    };
+      return { student, confidence: distance, attendanceId: attendance.id };
+    } finally {
+      await this.storageProvider.deleteTmpFile(file);
+    }
   }
 
-  public async update({ studentId, classId, filePath }: IUpdateRequest) {
-    const student = await this.studentsRepository.findById(studentId);
+  public async update({ studentId, classId, file }: IUpdateRequest): Promise<void> {
+    try {
+      const lecture = await this.findTrainedClass(classId);
 
-    if (!student) {
-      throw new AppError('Aluno não encontrado');
+      const enrolled = lecture.subject.students.some(
+        current => current.isEnrolled && current.student.id === studentId,
+      );
+
+      if (!enrolled) {
+        throw new AppError('Student is not enrolled in this subject');
+      }
+
+      await this.recognitionProvider.update(lecture.subject.id, {
+        ids: [studentId],
+        paths: [this.tmpPath(file)],
+      });
+    } finally {
+      await this.storageProvider.deleteTmpFile(file);
+    }
+  }
+
+  private trainingSamples(subject: Subject): Samples {
+    const enrolled = subject.students.filter(current => current.isEnrolled);
+
+    if (enrolled.length < 2) {
+      throw new AppError('Subject needs at least two enrolled students');
     }
 
-    const classExists = await this.classesRepository.findById(classId);
-
-    if (!classExists) {
-      throw new AppError('Class does not exists');
+    if (enrolled.some(({ student }) => student.photos.length === 0)) {
+      throw new AppError('Every enrolled student needs at least one photo');
     }
 
-    const { subject } = classExists;
-
-    const fileName = await this.recognitionProvider.update(
-      studentId,
-      filePath,
-      subject.id,
+    const photos = enrolled.flatMap(({ student }) =>
+      student.photos.map(photo => ({ id: student.id, path: path.join(uploadConfig.uploadsFolder, photo.path) })),
     );
 
-    await this.deleteTmpFile();
-    return fileName;
+    return { ids: photos.map(photo => photo.id), paths: photos.map(photo => photo.path) };
+  }
+
+  private async findTrainedClass(classId: number): Promise<Class> {
+    const lecture = await this.classesRepository.findById(classId);
+
+    if (!lecture) {
+      throw new AppError('Class does not exist');
+    }
+
+    if (!lecture.subject.recognitionFile) {
+      throw new AppError('Subject has not been trained yet');
+    }
+
+    return lecture;
+  }
+
+  private tmpPath(file: string): string {
+    return path.join(uploadConfig.tmpFolder, file);
   }
 }
 

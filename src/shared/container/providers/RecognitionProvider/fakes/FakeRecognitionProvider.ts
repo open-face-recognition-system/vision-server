@@ -1,41 +1,26 @@
-import IRecognitionProvider from '../models/IRecognitionProvider';
-
-interface FakeTrainingData {
-  id: number;
-  photoPath: string;
-  subjectId: number;
-}
+import IRecognitionProvider, { Prediction, Samples } from '../models/IRecognitionProvider';
 
 class FakeRecognitionProvider implements IRecognitionProvider {
-  public async update(id: number, photoPath: string): Promise<string> {
-    return `${id}-${photoPath}`;
+  public trainedWith?: Samples & { subjectId: number };
+
+  public updatedWith?: Samples & { subjectId: number };
+
+  public predictedWith?: { subjectId: number; imagePath: string };
+
+  public nextPrediction: Prediction = { studentId: 0, distance: 0 };
+
+  public async train(subjectId: number, samples: Samples): Promise<string> {
+    this.trainedWith = { subjectId, ...samples };
+    return `subject-${subjectId}.yml`;
   }
 
-  private traningData: FakeTrainingData[] = [];
-
-  public async training(
-    ids: number[],
-    photosPath: string[],
-    subjectId: number,
-  ): Promise<string> {
-    ids.forEach(id => {
-      this.traningData.push({
-        id,
-        photoPath: photosPath[0],
-        subjectId,
-      });
-    });
-    return 'fakePath';
+  public async update(subjectId: number, samples: Samples): Promise<void> {
+    this.updatedWith = { subjectId, ...samples };
   }
 
-  public async recognize(id: number, photoPath: string): Promise<string> {
-    const findData = this.traningData.find(
-      data => data.id === id && data.photoPath === photoPath,
-    );
-    if (findData) {
-      return String(findData.id);
-    }
-    return '0';
+  public async predict(subjectId: number, imagePath: string): Promise<Prediction> {
+    this.predictedWith = { subjectId, imagePath };
+    return this.nextPrediction;
   }
 }
 
