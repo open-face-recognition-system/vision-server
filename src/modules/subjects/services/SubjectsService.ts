@@ -1,4 +1,4 @@
-import PDFParser from 'pdf2json';
+import PDFParser, { Page as PdfPage } from 'pdf2json';
 import Student from '@modules/users/infra/typeorm/entities/Student';
 import IStudentsRepository from '@modules/users/repositories/IStudentsRepository';
 import ITeachersRepository from '@modules/users/repositories/ITeachersRepository';
@@ -125,68 +125,48 @@ class SubjectsService {
       throw new AppError('Subject does not exists');
     }
 
-    const pdfParser = new PDFParser();
+    try {
+      const pages = await this.readPdfPages(this.getPdfPath(filename));
+      const enrolledStudents: Student[] = [];
 
-    const students: StudentAux[] = [];
-    const enrolledStudents: Student[] = [];
+      for (const student of pages.flatMap(page => this.parseStudents(page.Texts))) {
+        enrolledStudents.push(await this.enrollOrCreateStudent(student, subject));
+      }
 
-    pdfParser.loadPDF(this.getPdfPath(filename));
+      return enrolledStudents;
+    } finally {
+      await this.storageProvider.deleteTmpFile(filename);
+    }
+  }
 
-    return new Promise(resolve => {
-      pdfParser.on('pdfParser_dataReady', async (pdfData: any) => {
-        const pages = pdfData.formImage.Pages;
-        const pagesPromise = pages.map(async (page: any) => {
-          const texts = page.Texts;
-          let nextInfo = 14;
-
-          for (let i = 14; i < texts.length; i++) {
-            if (i === nextInfo && i + 5 < texts.length) {
-              const name = this.formatName(texts[i].R[0].T);
-
-              const enrollment = texts[i + 1].R[0].T;
-              let email = this.formatEmail(texts[i + 4].R[0].T);
-              if (!this.hasNumbers(texts[i + 5].R[0].T)) {
-                email += texts[i + 5].R[0].T;
-                nextInfo = i + 7;
-              } else {
-                nextInfo = i + 6;
-              }
-              students.push({
-                name,
-                email,
-                enrollment,
-              });
-            }
-          }
-
-          const studentsPromise = students.map(async student => {
-            const enrolledStudent = await this.enrollOrCreateStudent(
-              student,
-              subject,
-            );
-            enrolledStudents.push(enrolledStudent);
-          });
-
-          await Promise.all(studentsPromise);
-        });
-        await Promise.all(pagesPromise);
-        await this.storageProvider.deleteTmpFile(filename);
-        resolve(enrolledStudents);
-      });
+  private readPdfPages(pdfPath: string): Promise<PdfPage[]> {
+    return new Promise((resolve, reject) => {
+      const pdfParser = new PDFParser();
+      pdfParser.on('pdfParser_dataReady', data => resolve(data.Pages));
+      pdfParser.on('pdfParser_dataError', () => reject(new AppError('Invalid enrollment PDF')));
+      pdfParser.loadPDF(pdfPath);
     });
   }
 
+  private parseStudents(texts: PdfPage['Texts']): StudentAux[] {
+    const text = (index: number) => texts[index].R[0].T.trim();
+    const students: StudentAux[] = [];
+
+    for (let i = 14; i + 5 < texts.length; ) {
+      const emailContinues = !this.hasNumbers(text(i + 5));
+      students.push({
+        name: text(i),
+        enrollment: text(i + 1),
+        email: emailContinues ? text(i + 4) + text(i + 5) : text(i + 4),
+      });
+      i += emailContinues ? 7 : 6;
+    }
+
+    return students;
+  }
+
   private hasNumbers(text: string): boolean {
-    const re = new RegExp('^[+-]?(([1-9][0-9]*)?[0-9](.[0-9]*)?|.[0-9]+)$');
-    return re.test(text.trim());
-  }
-
-  private formatName(nameToFormat: string): string {
-    return decodeURIComponent(nameToFormat.split('%20').join(' '));
-  }
-
-  private formatEmail(emailToFormat: string): string {
-    return emailToFormat.split('%40').join('@');
+    return /^[+-]?((\d+)?\d(.\d*)?|.\d+)$/.test(text.trim());
   }
 
   public async updateSubject(
