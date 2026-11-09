@@ -1,0 +1,32 @@
+services:
+  server:
+    build: .
+    ports:
+      - "127.0.0.1:3333:3333"
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      - storage:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  storage:
+  postgres_data:

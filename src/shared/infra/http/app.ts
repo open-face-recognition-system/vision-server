@@ -1,34 +1,31 @@
 import 'reflect-metadata';
-import 'dotenv/config';
 
 import express, { Request, Response, NextFunction } from 'express';
-import { pagination } from 'typeorm-pagination';
 import { errors } from 'celebrate';
 
 import cors from 'cors';
-import 'express-async-errors';
+import { MulterError } from 'multer';
 
 import uploadConfig from '@config/upload';
 import AppError from '@shared/errors/AppError';
 import routes from './api/v1';
 
 import '@shared/container';
-import '@shared/infra/typeorm';
 
 const app = express();
 
 app.use(express.json());
+app.get('/health', (_, response) => response.json(true));
 app.use('/files', express.static(uploadConfig.uploadsFolder));
-app.use(
-  '/recognitionFiles',
-  express.static(uploadConfig.recognitionFilesFolder),
-);
-app.use(pagination);
 app.use(cors());
 app.use(routes);
 app.use(errors());
 
 app.use((err: Error, request: Request, response: Response, _: NextFunction) => {
+  if (err instanceof MulterError) {
+    return response.status(400).json({ status: 'error', message: err.message });
+  }
+
   if (err instanceof AppError) {
     return response.status(err.statusCode).json({
       status: 'error',
