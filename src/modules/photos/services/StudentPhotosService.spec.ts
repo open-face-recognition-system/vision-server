@@ -89,10 +89,7 @@ describe('Student Photos Service', () => {
       'filename',
     );
 
-    const response = await studentPhotosService.updatePhoto(
-      photo.id,
-      'newfilename',
-    );
+    const response = await studentPhotosService.updatePhoto(student.id, photo.id, 'newfilename');
 
     expect(response.path).toBe('newfilename');
   });
@@ -117,7 +114,7 @@ describe('Student Photos Service', () => {
       'filename',
     );
 
-    await studentPhotosService.deletePhoto(photo.id);
+    await studentPhotosService.deletePhoto(student.id, photo.id);
 
     const response = await studentPhotosService.showPhotos(user.id);
 
@@ -157,7 +154,7 @@ describe('Student Photos Service', () => {
       }
     }
 
-    expect(
+    await expect(
       studentPhotosService.addPhoto(student.id, 'normal', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -181,7 +178,7 @@ describe('Student Photos Service', () => {
       await studentPhotosService.addPhoto(student.id, 'normal', 'filename');
     }
 
-    expect(
+    await expect(
       studentPhotosService.addPhoto(student.id, 'normal', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
@@ -199,26 +196,55 @@ describe('Student Photos Service', () => {
       enrollment: '123123',
     });
 
-    expect(
+    await expect(
       studentPhotosService.addPhoto(student.id, 'unhandled', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should not be able to add new user photo with non existing user', async () => {
-    expect(
+    await expect(
       studentPhotosService.addPhoto(0, 'normal', 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should not be able to update user photo with non existing photo', async () => {
-    expect(
-      studentPhotosService.updatePhoto(0, 'filename'),
+    await expect(
+      studentPhotosService.updatePhoto(1, 0, 'filename'),
     ).rejects.toBeInstanceOf(AppError);
   });
 
   it('should not be able to delete user photo with non existing photo', async () => {
-    expect(studentPhotosService.deletePhoto(0)).rejects.toBeInstanceOf(
+    await expect(studentPhotosService.deletePhoto(1, 0)).rejects.toBeInstanceOf(
       AppError,
     );
+  });
+
+  describe('ownership', () => {
+    const createStudentWithPhoto = async (email: string) => {
+      const user = await fakeUsersRepository.create({ name: email, email, password: 'x', role: Role.STUDENT });
+      const student = await fakeStudentsRepository.create({ user, enrollment: email });
+      const photo = await studentPhotosService.addPhoto(student.id, 'normal', `${email}.jpg`);
+      return { student, photo };
+    };
+
+    it('should not let a student replace a photo of another student', async () => {
+      const victim = await createStudentWithPhoto('victim@example.com');
+      const attacker = await createStudentWithPhoto('attacker@example.com');
+
+      await expect(
+        studentPhotosService.updatePhoto(attacker.student.id, victim.photo.id, 'evil.jpg'),
+      ).rejects.toBeInstanceOf(AppError);
+      expect((await fakePhotosRepository.findById(victim.photo.id))?.path).toBe('victim@example.com.jpg');
+    });
+
+    it('should not let a student delete a photo of another student', async () => {
+      const victim = await createStudentWithPhoto('victim@example.com');
+      const attacker = await createStudentWithPhoto('attacker@example.com');
+
+      await expect(
+        studentPhotosService.deletePhoto(attacker.student.id, victim.photo.id),
+      ).rejects.toBeInstanceOf(AppError);
+      expect(await fakePhotosRepository.findById(victim.photo.id)).toBeDefined();
+    });
   });
 });
